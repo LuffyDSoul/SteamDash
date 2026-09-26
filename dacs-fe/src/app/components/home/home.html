@@ -1,0 +1,174 @@
+<!-- Hero Section -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <h1 class="hero-title fade-in delay-1">SteamDash</h1>
+    <p class="hero-subtitle fade-in delay-2">Centro de juegos y noticias</p>
+    <p class="hero-description fade-in delay-3">
+      Sincronizá tu biblioteca, mirá tus estadísticas, compará con tus amigos y enterate de parches y novedades.
+    </p>
+    <div class="hero-cta fade-in delay-4">
+      <button class="btn-hero primary" routerLink="/biblioteca">
+        <span>🎮</span>
+        <span>Explorá tu bliblioteca</span>
+      </button>
+      <button class="btn-hero secondary" routerLink="/compare">
+        <span>👥</span>
+        <span>Compará bibliotecas</span>
+      </button>
+      <button class="btn-hero secondary" routerLink="/estadisticas">
+        <span>📈</span>
+        <span>Mirá tus estadísticas</span>
+      </button>
+      <button class="btn-hero secondary" routerLink="/news">
+        <span>📰</span>
+        <span>Ver noticias</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-decoration">
+    <div class="float-element element-1"></div>
+    <div class="float-element element-2"></div>
+    <div class="float-element element-3"></div>
+  </div>
+</section>
+
+<!-- What is SteamDash Section -->
+<section class="about-section reveal-left">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content">
+        <h2 class="section-title">¿Qué es SteamDash?</h2>
+        <p class="section-description">
+          SteamDash es una aplicación que centraliza tu biblioteca de Steam, a fin de brindarte estadísticas de tiempo jugado 
+          y noticias. Diseñada para simplificar la experiencia gamer con una interfaz clara y moderna.
+        </p>
+        <div class="about-features">
+          <div class="about-feature-item">
+            <span class="check-icon">✓</span>
+            <span>Sincronización en tiempo real</span>
+          </div>
+          <div class="about-feature-item">
+            <span class="check-icon">✓</span>
+            <span>Estadísticas detalladas</span>
+          </div>
+          <div class="about-feature-item">
+            <span class="check-icon">✓</span>
+            <span>Noticias actualizadas</span>
+          </div>          
+        </div>
+      </div>
+      <div class="about-visual">
+        <div class="visual-card">
+          <div class="visual-header">
+            <div class="visual-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="visual-title">Tu Dashboard</span>
+          </div>
+          <div class="visual-content">
+            <div class="stat-bar" style="width: 85%; animation-delay: 0.1s;"></div>
+            <div class="stat-bar" style="width: 70%; animation-delay: 0.2s;"></div>
+            <div class="stat-bar" style="width: 95%; animation-delay: 0.3s;"></div>
+            <div class="stat-bar" style="width: 60%; animation-delay: 0.4s;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section reveal-fade">
+  <div class="container">
+    <h2 class="section-title centered">Funcionalidades principales</h2>
+    <p class="section-subtitle centered">Todo lo que necesitás en un solo lugar</p>
+    
+    <div class="features-grid">
+      <!-- Feature 1: Biblioteca -->
+      <a routerLink="/biblioteca" class="feature-card elevate">
+        <div class="feature-card-icon">
+          <div class="icon-wrapper library">
+            📚
+          </div>
+        </div>
+        <h3 class="feature-card-title">Ver Biblioteca</h3>
+        <p class="feature-card-description">
+          Explorá tu colección completa de juegos y estadísticas de tiempo jugado.
+        </p>
+        <div class="feature-card-footer">
+          <span class="feature-link">Explorar →</span>
+        </div>
+      </a>
+
+      <!-- Feature 2: Comparar -->
+      <a routerLink="/compare" class="feature-card elevate">
+        <div class="feature-card-icon">
+          <div class="icon-wrapper compare">
+            🔄
+          </div>
+        </div>
+        <h3 class="feature-card-title">Comparar Bibliotecas</h3>
+        <p class="feature-card-description">
+          Descubrí qué juegos tenés en común con tus amigos y organizá partidas.
+        </p>
+        <div class="feature-card-footer">
+          <span class="feature-link">Comparar →</span>
+        </div>
+      </a>
+
+      <!-- Feature 3: Noticias -->
+      <a routerLink="/news" class="feature-card elevate">
+        <div class="feature-card-icon">
+          <div class="icon-wrapper news">
+            📰
+          </div>
+        </div>
+        <h3 class="feature-card-title">Ver Noticias</h3>
+        <p class="feature-card-description">
+          Enterate de las últimas actualizaciones, parches y novedades de tus juegos.
+        </p>
+        <div class="feature-card-footer">
+          <span class="feature-link">Ver noticias →</span>
+        </div>
+      </a>
+
+      <!-- Feature 3: Estadísticas -->
+      <a routerLink="/estadisticas" class="feature-card elevate">
+        <div class="feature-card-icon">
+          <div class="icon-wrapper news">
+            📰
+          </div>
+        </div>
+        <h3 class="feature-card-title">Ver Estadísticas</h3>
+        <p class="feature-card-description">
+          Mirá estadisticas como tus juegos más jugados, dinero gastado y más.
+        </p>
+        <div class="feature-card-footer">
+          <span class="feature-link">Ver Estadísticas →</span>
+        </div>
+      </a>
+      
+
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section (Optional) -->
+<section class="stats-section reveal-fade">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-icon">🎮</div>
+        <div class="stat-number">1000+</div>
+        <div class="stat-label">Juegos disponibles</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon">📊</div>
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Gratis</div>
+      </div>
+    </div>
+  </div>
+</section>

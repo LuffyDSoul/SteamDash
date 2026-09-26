@@ -1,0 +1,10 @@
+<div class="library-grid">
+  <div *ngIf="allGames.length === 0" class="empty">No hay juegos para mostrar — ejecuta una comparación.</div>
+  <div class="grid" *ngIf="allGames.length>0">
+    <div class="game-card" *ngFor="let g of allGames" (mouseenter)="hover.emit(g)" (mouseleave)="hover.emit(null)" [title]="$any(g).name + ' — Copias: ' + ($any(g).cantidadCopias || '-')">
+      <div class="thumb" *ngIf="$any(g).headerImage" [style.background-image]="'url(' + $any(g).headerImage + ')'"></div>
+      <div class="title">{{$any(g).name}}</div>
+      <div class="meta">Copias: {{$any(g).cantidadCopias || '-'}}</div>
+    </div>
+  </div>
+</div>

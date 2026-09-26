@@ -1,0 +1,7 @@
+<div *ngIf="api.news$ | async as news">
+    <article *ngFor="let n of news" style="padding:10px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; background:#0f1726;">
+    <div style="font-weight:600; margin-bottom:6px;">{{ n.title }}</div>
+    <div class="meta">{{ n.date | date:'medium' }}</div>
+    <a class="btn" style="margin-top:8px; display:inline-block;" [href]="n.url" target="_blank" rel="noopener">Abrir</a>
+    </article>
+</div>

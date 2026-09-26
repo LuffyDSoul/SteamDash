@@ -1,0 +1,28 @@
+<div class="game-news-container">
+  <h2 *ngIf="appId">Noticias del juego {{ appId }}</h2>
+
+  <div *ngIf="loading">Cargando noticias...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error">
+    <div *ngIf="news.length === 0">No se encontraron noticias.</div>
+    <div *ngFor="let n of news" class="news-card">
+      <div class="news-left">
+        <div class="img-placeholder">
+          <!-- placeholder for header preview -->
+          <img *ngIf="n.headerImageUrl" [src]="n.headerImageUrl" alt="header" />
+        </div>
+      </div>
+      <div class="news-center">
+        <div class="news-header">
+          <h3 class="news-title">{{ n.title }}</h3>
+          <div class="news-date">{{ n.dateFormatted }}</div>
+        </div>
+        <div class="news-contents" [innerHTML]="n.contents"></div>
+      </div>
+      <div class="news-right">
+        <a class="btn" [href]="n.url" target="_blank" rel="noopener">Ver noticia completa</a>
+      </div>
+    </div>
+  </div>
+</div>

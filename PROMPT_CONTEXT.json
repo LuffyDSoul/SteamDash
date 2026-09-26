@@ -1,0 +1,64 @@
+{
+  "version": "2025-11-03",
+  "rules": {
+    "conector": {
+      "path": "dacs-conector/",
+      "allowed": [
+        "calls_to_external_apis",
+        "dto_normalization",
+        "auth_token_management",
+        "rate_limiting",
+        "retries_backoff"
+      ],
+      "forbidden": [
+        "business_logic",
+        "persistence",
+        "ui_shaping"
+      ],
+      "examples": {
+        "ok": "SteamApiClient -> SteamGameDto",
+        "not_ok": "Implementar algoritmos de comparación en el conector"
+      }
+    },
+    "bff": {
+      "path": "dacs-bff/",
+      "allowed": [
+        "orchestration",
+        "shape_responses_for_ui",
+        "pagination",
+        "presentation_adjustments"
+      ],
+      "forbidden": [
+        "complex_business_logic",
+        "stateful_persistence"
+      ],
+      "examples": {
+        "ok": "map backend price=null -> price='0 USD'",
+        "not_ok": "calcular similitud entre bibliotecas en BFF"
+      }
+    },
+    "backend": {
+      "path": "dacs-backend/",
+      "allowed": [
+        "domain_models",
+        "business_logic",
+        "persistence",
+        "synchronization"
+      ],
+      "forbidden": [
+        "direct_third_party_calls_without_conector"
+      ],
+      "examples": {
+        "ok": "Calcular intersecciones y persistir resultado",
+        "not_ok": "Llamar a Steam directamente desde backend sin pasar por conector"
+      }
+    }
+  },
+  "usage": {
+    "how_to_prompt": [
+      "Siempre indicar la carpeta objetivo: conector|bff|backend",
+      "Incluir ejemplo de payload de entrada y salida",
+      "Si el cambio afecta varias capas, describir el flujo y sugerir la capa de implementación"
+    ]
+  }
+}

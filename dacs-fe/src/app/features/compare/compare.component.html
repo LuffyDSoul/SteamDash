@@ -1,0 +1,290 @@
+<main class="compare-page">
+  <header class="page-header">
+    <h1>Comparación de Usuarios</h1>
+    <p class="subtitle">Agrega entre 2 y 6 perfiles de Steam</p>
+  </header>
+
+  <!-- Loading / Error States -->
+  @if (loading()) {
+    <div class="loading-state" role="status" aria-live="polite">
+      <div class="spinner"></div>
+      <p>Cargando comparación...</p>
+      @if (progress() > 0) {
+        <div class="progress-container">
+          <progress class="progress-bar" [value]="progress()" max="100"></progress>
+          <span class="progress-text">{{ progress() }}%</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-state" role="alert">
+      <p>{{ error() }}</p>
+      <button (click)="error.set(null)">Cerrar</button>
+    </div>
+  }
+
+  <!-- User Cards Grid -->
+  <section class="users-grid">
+    @for (user of users(); track user.steamId) {
+      <user-compare-card
+        [user]="user"
+        [loading]="loading()"
+        (remove)="onRemoveUser($event)"
+        (edit)="onEditUser($event.oldId, $event.newId)"
+      ></user-compare-card>
+    }
+
+    <!-- Add User Slot -->
+    @if (canAddMore()) {
+      <add-user-slot (addUser)="onAddUser($event)"></add-user-slot>
+    } @else if (users().length === 0) {
+      <div class="empty-placeholder">
+        <div class="default-avatar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <p>Agrega usuarios para comenzar</p>
+        <add-user-slot (addUser)="onAddUser($event)"></add-user-slot>
+      </div>
+    }
+  </section>
+
+  <!-- Compare Button -->
+  @if (users().length >= 2) {
+    <div class="compare-actions">
+      <button 
+        class="btn-compare" 
+        (click)="onCompare()" 
+        [disabled]="loading() || hasPrivateProfiles()"
+        [title]="hasPrivateProfiles() ? 'No se puede comparar con perfiles privados' : 'Comparar bibliotecas'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </svg>
+        Comparar {{ users().length }} usuarios
+      </button>
+      @if (hasPrivateProfiles()) {
+        <p class="warning-message">
+          ⚠️ No se puede comparar: uno o más usuarios tienen el perfil privado. Deben configurarlo como público en Steam.
+        </p>
+      }
+    </div>
+  }
+
+  <!-- Comparison Results -->
+  @if (comparison()) {
+    <section class="comparison-results" aria-labelledby="results-title">
+      <h2 id="results-title">Resultados de la Comparación</h2>
+      
+      <!-- Stats -->
+      @if (comparisonStats) {
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Juegos Comunes</span>
+            <span class="stat-value">{{ comparisonStats.juegosComunes || 0 }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Similitud</span>
+            <span class="stat-value">{{ comparisonStats.porcentajeSimilitud || 0 }}%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Categoría</span>
+            <span class="stat-value">{{ comparisonStats.categoriaComparacion || 'N/A' }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Toolbar de ordenamiento y filtros -->
+      <div class="games-toolbar">
+        <div class="toolbar-left">
+          <label class="toolbar-label">Ordenar por:</label>
+          <button 
+            class="btn-sort" 
+            [class.active]="sortMode() === 'alpha-asc'"
+            (click)="setSortMode('alpha-asc')"
+            title="A → Z"
+          >
+            A → Z
+          </button>
+          <button 
+            class="btn-sort" 
+            [class.active]="sortMode() === 'alpha-desc'"
+            (click)="setSortMode('alpha-desc')"
+            title="Z → A"
+          >
+            Z → A
+          </button>
+          <button 
+            class="btn-sort" 
+            [class.active]="sortMode() === 'copies-desc'"
+            (click)="setSortMode('copies-desc')"
+            title="Más copias primero"
+          >
+            Más copias
+          </button>
+          <button 
+            class="btn-sort" 
+            [class.active]="sortMode() === 'copies-asc'"
+            (click)="setSortMode('copies-asc')"
+            title="Menos copias primero"
+          >
+            Menos copias
+          </button>
+        </div>
+        
+        <div class="toolbar-right">
+          <!-- Indicador de filtro Atlas activo -->
+          @if (atlasFilterActive()) {
+            <div class="atlas-indicator" (click)="deactivateAtlas()" title="Click para desactivar el filtro Atlas">
+              🔞 Filtro Atlas activo
+              <button class="btn-close-atlas" (click)="deactivateAtlas(); $event.stopPropagation()">✕</button>
+            </div>
+          }
+
+          <!-- Búsqueda por nombre -->
+          <input 
+            type="text" 
+            class="name-filter-input"
+            [(ngModel)]="nameFilter"
+            placeholder="Buscar por nombre..."
+          />
+
+          <!-- Filtros con dropdown -->
+          <div class="tag-filter-dropdown">
+            <button class="btn-filter" (click)="toggleTagDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+              </svg>
+              Filtros
+              @if (selectedCommonTags().size > 0 || selectedUserFilters().size > 0) {
+                <span class="tag-count">
+                  ({{ selectedCommonTags().size + selectedUserFilters().size }})
+                </span>
+              }
+            </button>
+            
+            <!-- Dropdown content dentro del contenedor -->
+            @if (showTagDropdown()) {
+              <div class="dropdown-content">
+                <!-- Sección de filtro por usuarios -->
+                <div class="dropdown-section">
+                  <div class="dropdown-header">
+                    <span>Filtrar por usuarios</span>
+                    @if (selectedUserFilters().size > 0) {
+                      <button class="btn-clear-tags" (click)="clearUserFilters()">
+                        Limpiar
+                      </button>
+                    }
+                  </div>
+                  <div class="users-checkboxes">
+                    @for (user of users(); track user.steamId) {
+                      <label class="checkbox-label user-checkbox">
+                        <input 
+                          type="checkbox" 
+                          [checked]="isUserFilterSelected(user.steamId)"
+                          (change)="toggleUserFilter(user.steamId)"
+                        />
+                        <img [src]="user.avatar" [alt]="user.personaName" class="user-checkbox-avatar" />
+                        <span>{{ user.personaName }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Sección de tags -->
+                <div class="dropdown-section">
+                  <div class="dropdown-header">
+                    <span>Etiquetas comunes</span>
+                    @if (selectedCommonTags().size > 0) {
+                      <button class="btn-clear-tags" (click)="clearCommonTags()">
+                        Limpiar
+                      </button>
+                    }
+                  </div>
+                  <div class="tags-checkboxes">
+                    @for (tag of commonTagOptions; track tag) {
+                      <label class="checkbox-label">
+                        <input 
+                          type="checkbox" 
+                          [checked]="isTagSelected(tag)"
+                          (change)="toggleCommonTag(tag)"
+                        />
+                        <span>{{ tag }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+                
+                <div class="custom-tag-input">
+                  <input 
+                    type="text" 
+                    class="tag-filter-input"
+                    [(ngModel)]="tagFilter"
+                    placeholder="Buscar otras tags (separadas por comas)..."
+                    (keydown.escape)="toggleTagDropdown()"
+                    (keydown.enter)="checkAtlasFilter()"
+                    (blur)="checkAtlasFilter()"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      
+      <!-- Backdrop para filtros (fuera del toolbar) -->
+      @if (showTagDropdown()) {
+        <div class="filters-backdrop" (click)="toggleTagDropdown()"></div>
+      }
+
+      <!-- Games Library: listas ordenadas (comunes, luego únicos por usuario) -->
+      <div class="games-library">
+        @if (getComparisonLists().length === 0) {
+          <div>No hay juegos para mostrar</div>
+        }
+
+        @for (list of getComparisonLists(); track list.key) {
+          <section class="games-list">
+            <h3 class="list-title list-toggle" 
+                (click)="toggleList(list.key)" 
+                role="button" 
+                tabindex="0">
+              <span class="toggle-icon">@if (isExpanded(list.key)) { ▾ } @else { ▸ }</span>
+              {{ list.title }}
+            </h3>
+
+            @if (list.games.length === 0) {
+              <p class="empty-list">— Ninguno —</p>
+            } @else {
+              @if (isExpanded(list.key)) {
+                <div class="games-grid">
+                  @for (game of list.games; track game.appId) {
+                    <game-card [game]="game" [showCopies]="true"></game-card>
+                  }
+                </div>
+              }
+            }
+          </section>
+        }
+
+        <!-- Contador de juegos sin imagen -->
+        @if (hiddenGamesCount() > 0) {
+          <div class="hidden-games-notice">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" opacity="0.3"/>
+              <path d="M3.27 3L2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+            </svg>
+            {{ hiddenGamesCount() }} juegos ocultos (sin imagen disponible)
+          </div>
+        }
+      </div>
+    </section>
+  }
+</main>

@@ -1,0 +1,4 @@
+GitRepositoriesView.GitDirectories=C\:\\dacs2025-steamApi\\dacsv3\\dacs-bff\\.git;C\:\\dacs2025-steamApi\\dacsv3\\dacs-conector\\.git;C\:\\dacs2025-steamApi\\dacsv3\\dacs-backend\\.git;
+GitRepositoriesView.GitDirectories.relative=dacs-bff\\.git;dacs-conector\\.git;dacs-backend\\.git;
+core_autoIgnoreDerivedResources=false
+eclipse.preferences.version=1

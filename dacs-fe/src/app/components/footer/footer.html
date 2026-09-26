@@ -1,0 +1,32 @@
+<footer class="footer">
+    <!-- Overlay para bloquear footer durante operaciones -->
+    <div *ngIf="uiBlock.isBlocked()" class="footer-overlay"></div>
+    <div class="footer-inner">
+    <section class="brand-col">
+        <div class="brand">
+        <span class="dot"></span>
+        <span>SteamDash</span>
+        </div>
+        <p class="muted">
+        Dashboard para tu biblioteca de juegos, estadísticas y noticias.
+        </p>
+        <div class="status">
+        <span class="pill"><span class="led"></span> Online</span>
+        </div>
+    </section>
+
+    <section class="about-col">
+        <h4>Legal</h4>
+        <ul>
+        <li><a routerLink="/privacidad">Privacidad</a></li>
+        <li><a routerLink="/terminos">Términos</a></li>
+        <li><a routerLink="/nosotros">Nosotros</a></li>
+        </ul>
+    </section>
+    </div>
+
+    <div class="footer-bottom">
+    <span>© {{year}} SteamDash</span>
+    <span class="made">Hecho para gamers</span>
+    </div>
+</footer>

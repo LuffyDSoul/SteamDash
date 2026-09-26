@@ -1,0 +1,62 @@
+/* Layout para que el footer quede al final */
+app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.header {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.main-content {
+  flex: 1 0 auto;
+  display: block;
+  width: 100%;
+  padding-top: 64px; /* Espacio para el header fijo */
+}
+
+.footer {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Responsive para main-content */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 56px;
+  }
+}
+
+/* Pequeña mejora en contraste para enlaces del footer al foco */
+.footer a:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34,211,238,.18);
+  border-radius: 8px;
+}
+
+/* 1) Evitar scroll horizontal accidentaI */
+html, body { overflow-x: hidden; }
+
+/* 2) Asegurar fondo oscuro siempre */
+html, body { background: var(--bg); }
+
+/* 3) Poner oscuro el “scrollbar corner” (Chrome/WebKit) */
+::-webkit-scrollbar-corner { background: var(--bg); }
+
+/* 4) Evitar que hijos grid/flex fuercen overflow por min-content */
+* { min-width: 0; }
+
+/* 5) Si algún canvas “parpadea” blanco antes de dibujar, dale fondo */
+canvas { background: transparent; }         /* o #0c1320 para matchear cards */

@@ -1,0 +1,116 @@
+<div class="table-grid-container">
+  <div class="header">
+    <div class="header-content">
+      <h1>Tabla y Grilla de Datos</h1>
+      <button class="back-button" routerLink="/home">
+        ← Volver al Inicio
+      </button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-container">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearch()"
+        placeholder="Buscar en los datos..."
+        class="search-input">
+      <button 
+        *ngIf="searchTerm" 
+        (click)="clearSearch()" 
+        class="clear-button">
+        ✕
+      </button>
+    </div>
+    
+    <div class="view-controls">
+      <button 
+        (click)="toggleView()" 
+        class="toggle-button"
+        [class.active]="viewMode === 'table'">
+        📋 Tabla
+      </button>
+      <button 
+        (click)="toggleView()" 
+        class="toggle-button"
+        [class.active]="viewMode === 'grid'">
+        🔲 Grilla
+      </button>
+    </div>
+  </div>
+
+  <div class="data-container">
+    <!-- Vista de Tabla -->
+    <div *ngIf="viewMode === 'table'" class="table-view">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Ciudad</th>
+            <th>Email</th>
+            <th>Departamento</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredData">
+            <td>{{ item.id }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.age }}</td>
+            <td>{{ item.city }}</td>
+            <td>{{ item.email }}</td>
+            <td>{{ item.department }}</td>
+            <td>
+              <span [class]="getStatusClass(item.status)">
+                {{ item.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vista de Grilla -->
+    <div *ngIf="viewMode === 'grid'" class="grid-view">
+      <div class="grid-container">
+        <div *ngFor="let item of filteredData" class="grid-card">
+          <div class="card-header">
+            <h3>{{ item.name }}</h3>
+            <span [class]="getStatusClass(item.status)">
+              {{ item.status }}
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">ID:</span>
+              <span class="value">{{ item.id }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Edad:</span>
+              <span class="value">{{ item.age }} años</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Ciudad:</span>
+              <span class="value">{{ item.city }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Email:</span>
+              <span class="value">{{ item.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Departamento:</span>
+              <span class="value">{{ item.department }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Mostrando {{ filteredData.length }} de {{ tableData.length }} registros</p>
+  </div>
+</div>

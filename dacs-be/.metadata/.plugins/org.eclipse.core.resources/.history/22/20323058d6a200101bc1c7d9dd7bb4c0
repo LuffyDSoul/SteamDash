@@ -1,0 +1,46 @@
+package com.dacs.backend.model.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.dacs.backend.dto.Noticia;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * Repositorio para la entidad Noticia
+ */
+@Repository
+public interface NoticiaRepository extends JpaRepository<Noticia, Long> {
+    
+    /**
+     * Buscar noticias por aplicación
+     */
+    List<Noticia> findByAplicacionId(Long aplicacionId);
+    
+    /**
+     * Buscar noticias por aplicación ordenadas por fecha (más recientes primero)
+     */
+    List<Noticia> findByAplicacionIdOrderByFechaDesc(Long aplicacionId);
+    
+    /**
+     * Buscar noticias por rango de fechas
+     */
+    List<Noticia> findByFechaBetween(LocalDate fechaInicio, LocalDate fechaFin);
+    
+    /**
+     * Métodos para compatibilidad con controlador
+     */
+    List<Noticia> findByFechaGreaterThanEqual(LocalDate fecha);
+    
+    /**
+     * Buscar noticias por autor
+     */
+    List<Noticia> findByAutor(String autor);
+    
+    /**
+     * Contar noticias por aplicación
+     */
+    long countByAplicacionId(Long aplicacionId);
+}

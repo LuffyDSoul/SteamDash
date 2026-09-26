@@ -1,0 +1,329 @@
+/* Solo estilos específicos del header (resto siguen en styles.css) */
+    .toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .spacer { flex: 1 1 auto; }
+    .nav { display:flex; gap:12px; margin-left:24px; }
+    .nav a {
+      color: var(--muted); padding: 8px 10px; border-radius: 10px; text-decoration: none;
+      position: relative; transition: color .2s ease, background .2s ease;
+    }
+    .nav a:hover { background: var(--hover); color: var(--text); }
+    .nav a.active { color: #d8ccff; }
+    .nav a.active::after {
+      content:''; position:absolute; left:10px; right:10px; bottom:4px; height:2px;
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      border-radius: 2px; box-shadow: 0 0 10px rgba(34,211,238,.35);
+    }
+
+    /* User Profile */
+    .user-profile {
+      position: relative;
+      margin-left: 12px;
+    }
+
+    .user-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0e1422;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 12px 6px 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text);
+    }
+
+    .user-btn:hover {
+      background: var(--hover);
+      border-color: rgba(139,92,246,.35);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: linear-gradient(180deg, #151821, #0e1422);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(139,92,246,.1);
+      min-width: 260px;
+      z-index: 100;
+      animation: slideDown 0.2s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-menu-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .user-avatar-large {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-fullname {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .user-menu-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 8px;
+    }
+
+    .user-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      text-align: left;
+    }
+
+    .user-menu-item:hover {
+      background: var(--hover);
+    }
+
+    .user-menu-item.danger {
+      color: var(--danger);
+    }
+
+    .user-menu-item.danger:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .user-menu-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Mobile menu (checkbox hack) */
+    .nav-toggle { display:none; }
+    .burger { 
+      display:none; gap:6px; flex-direction:column; cursor:pointer; padding:10px;
+      z-index: 1002;
+      position: relative;
+    }
+    .burger span { width:22px; height:2px; background:#9fb0cc; display:block; transition: all 0.3s ease; }
+    
+    /* Animación del hamburger al abrirse */
+    .nav-toggle:checked + .burger span:nth-child(1) {
+      transform: rotate(45deg) translate(6px, 6px);
+    }
+    .nav-toggle:checked + .burger span:nth-child(2) {
+      opacity: 0;
+    }
+    .nav-toggle:checked + .burger span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+    }
+    
+    .nav-mobile {
+      display:none; 
+      position:fixed; 
+      top:64px; 
+      right:10px; 
+      left:10px; 
+      z-index:1001;
+      background: #0e1422; 
+      border:1px solid var(--border); 
+      border-radius: 12px; 
+      padding:10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      max-height: calc(100vh - 84px);
+      overflow-y: auto;
+      animation: slideDownFade 0.3s ease;
+    }
+    
+    @keyframes slideDownFade {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .nav-mobile a { 
+      display:block; 
+      padding:12px; 
+      border-radius:10px; 
+      color:var(--text); 
+      text-decoration:none;
+      transition: background 0.2s ease;
+    }
+    .nav-mobile a:hover { background: var(--hover); }
+    .nav-mobile a.active {
+      background: rgba(102,192,244,0.08);
+      color: #d8ccff;
+    }
+
+    .nav-mobile-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    .nav-mobile-logout {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      text-align: left;
+    }
+
+    .nav-mobile-logout:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    @media (max-width: 920px) {
+      .nav { display:none; }
+      .actions { display:none; }
+      .user-profile { display:none; }
+      .burger { display:flex; margin-left:auto; }
+      .nav-toggle:checked + .burger + .nav-mobile { display:block; }
+      
+      /* Ajustes de toolbar para móviles */
+      .toolbar {
+        padding: 0 12px;
+        height: 60px;
+      }
+      
+      .brand {
+        font-size: 1rem;
+      }
+      
+      .nav-mobile {
+        top: 60px;
+        max-height: calc(100vh - 80px);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .toolbar {
+        padding: 0 10px;
+        height: 56px;
+      }
+      
+      .brand {
+        font-size: 0.95rem;
+      }
+      
+      .brand .dot {
+        width: 8px;
+        height: 8px;
+      }
+      
+      .nav-mobile {
+        top: 56px;
+        right: 8px;
+        left: 8px;
+        max-height: calc(100vh - 72px);
+      }
+      
+      .burger {
+        padding: 8px;
+      }
+      
+      .burger span {
+        width: 20px;
+      }
+    }
+
+    /* Skip link */
+    .skip {
+      position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+    }
+    .skip:focus {
+      position:fixed; left:10px; top:10px; width:auto; height:auto; padding:8px 12px;
+      background:#111827; color:#fff; border:1px solid var(--border); border-radius:10px; z-index:100;
+    }
+
+    .brand-link { color: var(--text); text-decoration: none; }

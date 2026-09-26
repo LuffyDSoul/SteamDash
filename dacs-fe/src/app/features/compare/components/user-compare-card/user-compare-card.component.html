@@ -1,0 +1,93 @@
+<article class="user-compare-card" 
+  [class.private-profile]="user.isPrivate"
+  [attr.aria-labelledby]="'user-' + user.steamId">
+  <header class="card-header">
+    <div class="avatar-wrapper">
+      <img 
+        [src]="user.avatar || 'assets/default-avatar.png'" 
+        [alt]="user.personaName + ' avatar'"
+        class="avatar"
+        loading="lazy"
+      />
+      @if (user.countryCode) {
+        <img 
+          [src]="'https://flagcdn.com/w40/' + user.countryCode.toLowerCase() + '.png'"
+          [alt]="user.countryCode"
+          class="country-flag"
+          title="País: {{ user.countryCode }}"
+        />
+      }
+    </div>
+    
+    @if (!isEditing()) {
+      <div class="user-info">
+        <h3 [id]="'user-' + user.steamId" class="persona-name">{{ user.personaName }}</h3>
+        <div class="badges">
+          @if (user.isPrivate) {
+            <span class="badge badge-private" title="Perfil privado - No se puede comparar">🔒 Perfil privado</span>
+          } @else if (user.communityVisibilityState === 2) {
+            <span class="badge badge-friends" title="Solo amigos">👥 Amigos</span>
+          } @else if (user.communityVisibilityState === 3) {
+            <span class="badge badge-public" title="Perfil público">🌐 Público</span>
+          }
+        </div>
+      </div>
+      <button 
+        type="button"
+        class="btn-edit"
+        (click)="onStartEdit()"
+        [attr.aria-label]="'Editar usuario ' + user.personaName"
+        title="Editar Steam ID"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+      </button>
+      <button 
+        type="button"
+        class="btn-remove"
+        (click)="onRemove()"
+        [disabled]="loading"
+        [class.disabled-during-compare]="loading"
+        [attr.aria-label]="loading ? 'No se pueden eliminar usuarios durante la comparación' : 'Eliminar usuario ' + user.personaName"
+        [title]="loading ? 'No se pueden eliminar usuarios durante la comparación' : 'Quitar usuario'"
+      >
+        ×
+      </button>
+    } @else {
+      <div class="edit-panel">
+        <input 
+          type="text" 
+          [(ngModel)]="editingSteamId"
+          placeholder="Steam ID"
+          class="edit-input"
+          (keydown.enter)="onConfirmEdit()"
+          (keydown.escape)="onCancelEdit()"
+        />
+        <button type="button" class="btn-confirm" (click)="onConfirmEdit()" title="Confirmar">✓</button>
+        <button type="button" class="btn-cancel" (click)="onCancelEdit()" title="Cancelar">✗</button>
+      </div>
+    }
+  </header>
+
+  <div class="stats-pills">
+    <div class="pill" title="Total de horas jugadas">
+      <span class="pill-label">Horas</span>
+      <span class="pill-value">{{ user.stats.hours !== undefined ? formatNumber(user.stats.hours) : '-' }}</span>
+    </div>
+    <div class="pill" title="Total de juegos">
+      <span class="pill-label">Juegos</span>
+      <span class="pill-value">{{ user.stats.games !== undefined ? formatNumber(user.stats.games) : '-' }}</span>
+    </div>
+    <div class="pill" title="Juegos únicos">
+      <span class="pill-label">Únicos</span>
+      <span class="pill-value">{{ user.stats.uniques !== undefined ? formatNumber(user.stats.uniques) : '-' }}</span>
+    </div>
+  </div>
+
+  <footer class="card-footer">
+    <span class="creation-date" [title]="'Cuenta creada el ' + formatDate(user.accountCreated)">
+      En Steam desde {{ formatDate(user.accountCreated) }}
+    </span>
+  </footer>
+</article>

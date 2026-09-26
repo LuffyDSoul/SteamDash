@@ -1,0 +1,300 @@
+<div class="juego-aleatorio-container">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner-large"></div>
+    <h2>Buscando juego aleatorio...</h2>
+    <p>Analizando tu biblioteca de Steam</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !loading() && !juego()" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h2>No se encontraron juegos</h2>
+    <p>{{ error() }}</p>
+    <div class="error-actions">
+      <button class="btn-primary" (click)="buscarJuegoAleatorio()">
+        🎲 Buscar otro juego
+      </button>
+      <button class="btn-secondary" (click)="volverABiblioteca()">
+        ⬅️ Volver a la biblioteca
+      </button>
+    </div>
+  </div>
+
+  <!-- Initial State - Sin juego seleccionado -->
+  <div *ngIf="!juego() && !loading() && !error()" class="initial-state">
+    <div class="initial-icon">🎲</div>
+    <h2>Encuentra tu próximo juego</h2>
+    <p>Selecciona los criterios y presiona "Buscar otro juego" para obtener una recomendación aleatoria de tu biblioteca.</p>
+    <div class="initial-controls">
+      <div class="filter-controls">
+        <div class="hour-filters">
+          <label>
+            <input 
+              type="radio" 
+              name="filtro" 
+              value="no-jugados"
+              [checked]="filtroHoras() === 'no-jugados'"
+              (change)="cambiarFiltro('no-jugados')"
+            />
+            <span>Solo juegos no jugados</span>
+          </label>
+          <label>
+            <input 
+              type="radio" 
+              name="filtro" 
+              value="personalizado"
+              [checked]="filtroHoras() === 'personalizado'"
+              (change)="cambiarFiltro('personalizado')"
+            />
+            <span>Menos de</span>
+            <input 
+              type="number" 
+              class="hours-input"
+              min="1"
+              max="100"
+              [ngModel]="horasPersonalizadas()"
+              (ngModelChange)="actualizarHorasPersonalizadas($event)"
+              [disabled]="filtroHoras() !== 'personalizado'"
+            />
+            <span>horas</span>
+          </label>
+        </div>
+
+        <!-- Filtros de Tags -->
+        <div class="tag-filters">
+          <button #filtersButton class="filters-button" (click)="toggleFilters()">
+            Filtros
+            <span class="filters-count" *ngIf="selectedTags().size">· {{ selectedTags().size }} tag(s)</span>
+            <span class="caret">▼</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mostrar tags seleccionados -->
+      <div class="selected-tags-display" *ngIf="selectedTags().size > 0">
+        <span class="selected-tag" *ngFor="let tag of getSelectedTagsArray()">
+          {{ tag }}
+          <button class="remove-tag" (click)="toggleTag(tag)">✕</button>
+        </span>
+      </div>
+
+      <button class="btn-search-large" (click)="buscarJuegoAleatorio()">
+        🎲 Buscar juego aleatorio
+      </button>
+
+      <button class="btn-back-initial" (click)="volverABiblioteca()">
+        ⬅️ Volver a la biblioteca
+      </button>
+    </div>
+  </div>
+
+  <!-- Juego Encontrado -->
+  <div *ngIf="juego() && !loading()" class="juego-content">
+    <!-- Background blur -->
+    <div class="background-blur" [style.background-image]="'url(' + getBackgroundImage() + ')'"></div>
+
+    <!-- Header con controles -->
+    <div class="game-header">
+      <button class="btn-back" (click)="volverABiblioteca()" title="Volver a la biblioteca">
+        ⬅️ Biblioteca
+      </button>
+      
+      <div class="filter-controls">
+        <div class="hour-filters">
+          <label>
+            <input 
+              type="radio" 
+              name="filtro" 
+              value="no-jugados"
+              [checked]="filtroHoras() === 'no-jugados'"
+              (change)="cambiarFiltro('no-jugados')"
+            />
+            <span>Solo juegos no jugados</span>
+          </label>
+          <label>
+            <input 
+              type="radio" 
+              name="filtro" 
+              value="personalizado"
+              [checked]="filtroHoras() === 'personalizado'"
+              (change)="cambiarFiltro('personalizado')"
+            />
+            <span>Menos de</span>
+            <input 
+              type="number" 
+              class="hours-input"
+              min="1"
+              max="100"
+              [ngModel]="horasPersonalizadas()"
+              (ngModelChange)="actualizarHorasPersonalizadas($event)"
+              [disabled]="filtroHoras() !== 'personalizado'"
+            />
+            <span>horas</span>
+          </label>
+        </div>
+
+        <!-- Filtros de Tags -->
+        <div class="tag-filters">
+          <button #filtersButton class="filters-button" (click)="toggleFilters()">
+            Filtros
+            <span class="filters-count" *ngIf="selectedTags().size">· {{ selectedTags().size }} tag(s)</span>
+            <span class="caret">▼</span>
+          </button>
+        </div>
+
+        <!-- Mostrar tags seleccionados -->
+        <div class="selected-tags-display" *ngIf="selectedTags().size > 0">
+          <span class="selected-tag" *ngFor="let tag of getSelectedTagsArray()">
+            {{ tag }}
+            <button class="remove-tag" (click)="toggleTag(tag)">✕</button>
+          </span>
+        </div>
+      </div>
+
+      <button class="btn-search-again" (click)="buscarJuegoAleatorio()">
+        🎲 Buscar otro juego
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="game-main">
+      <!-- Imagen vertical del juego -->
+      <div class="game-image-section">
+        <img 
+          [src]="getMainImage()" 
+          [alt]="juego()?.name"
+          class="game-vertical-image"
+          (error)="$event.target.src='https://via.placeholder.com/600x900?text=Sin+Imagen'"
+        />
+      </div>
+
+      <!-- Información del juego -->
+      <div class="game-info-section">
+        <h1 class="game-title">{{ juego()?.name }}</h1>
+
+        <!-- Metadata básica -->
+        <div class="game-meta">
+          <span class="meta-item" *ngIf="juego()?.releaseDate">
+            📅 {{ juego()?.releaseDate }}
+          </span>
+          <span class="meta-item price" [class.free]="juego()?.isFree">
+            💰 {{ juego()?.price || (juego()?.isFree ? 'Gratis' : 'N/A') }}
+          </span>
+          <span class="meta-item" *ngIf="juego()?.playtimeForever !== undefined">
+            🕐 {{ formatPlaytime(juego()?.playtimeForever) }} jugadas
+          </span>
+        </div>
+
+        <!-- Developers y Publishers -->
+        <div class="game-credits" *ngIf="juego()?.developers || juego()?.publishers">
+          <div *ngIf="juego()?.developers && juego()!.developers!.length > 0">
+            <strong>Desarrollador:</strong> {{ juego()!.developers!.join(', ') }}
+          </div>
+          <div *ngIf="juego()?.publishers && juego()!.publishers!.length > 0">
+            <strong>Distribuidor:</strong> {{ juego()!.publishers!.join(', ') }}
+          </div>
+        </div>
+
+        <!-- Descripción corta -->
+        <div class="game-description" *ngIf="juego()?.shortDescription">
+          <h3>Acerca de este juego</h3>
+          <p>{{ juego()?.shortDescription }}</p>
+        </div>
+
+        <!-- Descripción completa (si existe y es diferente) -->
+        <div class="game-description-full" *ngIf="juego()?.description && juego()?.description !== juego()?.shortDescription">
+          <p [innerHTML]="juego()?.description"></p>
+        </div>
+
+        <!-- Tags/Géneros -->
+        <div class="game-tags" *ngIf="juego()?.tags && juego()!.tags!.length > 0">
+          <h3>Etiquetas populares</h3>
+          <div class="tags-list">
+            <span class="tag" *ngFor="let tag of juego()!.tags!.slice(0, 10)">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Géneros -->
+        <div class="game-genres" *ngIf="juego()?.genres && juego()!.genres!.length > 0">
+          <h3>Géneros</h3>
+          <div class="genres-list">
+            <span class="genre" *ngFor="let genre of juego()!.genres">
+              {{ genre }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Categorías -->
+        <div class="game-categories" *ngIf="juego()?.categories && juego()!.categories!.length > 0">
+          <h3>Características</h3>
+          <div class="categories-list">
+            <span class="category" *ngFor="let category of juego()!.categories!.slice(0, 8)">
+              ✓ {{ category }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Screenshots -->
+        <div class="game-screenshots" *ngIf="juego()?.screenshots && juego()!.screenshots!.length > 0">
+          <h3>Capturas de pantalla</h3>
+          <div class="screenshots-grid">
+            <img 
+              *ngFor="let screenshot of juego()!.screenshots!.slice(0, 6)" 
+              [src]="screenshot" 
+              alt="Screenshot"
+              class="screenshot-thumb"
+            />
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="game-actions">
+          <button class="btn-store" (click)="abrirEnSteam()">
+            🛒 Ver en Steam Store
+          </button>
+          <button class="btn-search-again-mobile" (click)="buscarJuegoAleatorio()">
+            🎲 Buscar otro juego
+          </button>
+          <button class="btn-back-mobile" (click)="volverABiblioteca()">
+            ⬅️ Volver a la biblioteca
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backdrop y Panel de filtros - fuera de todos los estados para que funcione siempre -->
+  <div class="filters-backdrop" *ngIf="filtersOpen()" (click)="closeFilters()"></div>
+
+  <div class="filters-panel" *ngIf="filtersOpen()"
+       [style.top]="filtersPanelPosition().top"
+       [style.left]="filtersPanelPosition().left">
+    <div class="filters-section" *ngIf="availableTags().length">
+      <label>Tags</label>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar tags"
+        [ngModel]="tagSearchText()"
+        (ngModelChange)="tagSearchText.set($event)"
+      />
+      <div class="tags-list">
+        <label class="tag-item" *ngFor="let tag of filteredAvailableTags()">
+          <input
+            type="checkbox"
+            [checked]="selectedTags().has(tag)"
+            (change)="toggleTag(tag)"
+          />
+          <span>{{ tag }}</span>
+        </label>
+      </div>
+    </div>
+    <div class="filters-actions">
+      <button class="btn-clear" (click)="clearTagFilters()">Limpiar</button>
+      <button class="btn-apply" (click)="closeFilters()">Cerrar</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="list" *ngIf="api.games$ | async as games">
+    <div class="row" *ngFor="let g of games">
+    <div class="cover">{{ g.name[0] }}</div>
+    <div>
+        <div class="title">{{ g.name }}</div>
+        <div class="meta">
+        {{ (g.playtimeForever/60) | number:'1.0-0' }} h ·
+        {{ g.genres?.join(' / ') || '—' }}
+        </div>
+    </div>
+    <button class="btn">Detalles</button>
+    </div>
+
+    <div *ngIf="!games?.length" class="meta">No hay resultados</div>
+</div>

@@ -1,0 +1,83 @@
+<div class="game-card">
+  <div class="game-image-wrapper">
+    @if (game.imgVertical || game.headerImage) {
+      <img 
+        [src]="game.imgVertical || game.headerImage || ''" 
+        [alt]="game.name"
+        class="game-image"
+        loading="lazy"
+        (error)="onImageError($event)"
+      />
+    } @else {
+      <div class="game-image-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h18v8zM6 15h2v-2H6v2zm3.5 0h2v-2h-2v2zm3.5 0h2v-2h-2v2z"/>
+        </svg>
+        <span class="placeholder-text">Sin imagen</span>
+      </div>
+    }
+    
+    <!-- Overlay que se desliza desde abajo -->
+    <div class="game-overlay">
+      <div class="game-tags">
+        @for (tag of game.tags.slice(0, 4) || []; track $index) {
+          <span class="tag">{{ tag }}</span>
+        }
+      </div>
+      
+      <!-- Precio del juego -->
+      @if (game.price) {
+        <div class="game-price">{{ game.price }}</div>
+      }
+      
+      <h4 class="game-title">
+        <a [href]="game.storeUrl || 'https://store.steampowered.com/app/' + game.appId"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="game-title-link"
+           (click)="openStore($event, game.storeUrl || ('https://store.steampowered.com/app/' + game.appId))">
+          {{ game.name }}
+        </a>
+      </h4>
+      
+      <!-- Avatar(es) del/los usuario(s) que tienen el juego -->
+      @if (game.ownersList && game.ownersList.length > 0) {
+        <div class="game-owners">
+          @for (owner of game.ownersList.slice(0, 6); track owner.steamId) {
+            <img 
+              [src]="owner.avatar" 
+              [alt]="owner.personaName"
+              [title]="owner.personaName"
+              class="owner-mini-avatar"
+            />
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Badge de copias (si showCopies está activo) -->
+  @if (showCopies && game.owners) {
+    <div class="copies-badge" [attr.data-copies]="game.owners">
+      <span class="copies-number">{{ game.owners }}</span>
+      
+      <!-- Tooltip con avatares al hacer hover -->
+      @if (game.ownersList && game.ownersList.length > 0) {
+        <div class="owners-tooltip">
+          <div class="owners-avatars">
+            @for (owner of game.ownersList; track owner.steamId) {
+              <div class="owner-item">
+                <img 
+                  [src]="owner.avatar" 
+                  [alt]="owner.personaName"
+                  class="owner-avatar"
+                />
+                <span class="owner-name">{{ owner.personaName }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

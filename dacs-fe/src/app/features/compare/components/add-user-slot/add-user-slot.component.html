@@ -1,0 +1,29 @@
+<div class="add-user-slot">
+  @if (!showInput) {
+    <button 
+      type="button"
+      class="btn-add-circle"
+      (click)="onToggle()"
+      aria-label="Agregar usuario"
+      title="Agregar usuario"
+    >
+      +
+    </button>
+  }
+
+  @if (showInput) {
+    <div class="input-panel">
+      <input 
+        type="text"
+        [(ngModel)]="steamId"
+        placeholder="Ingrese Steam ID"
+        class="steam-id-input"
+        (keyup.enter)="onAdd()"
+        (keyup.escape)="onCancel()"
+        autofocus
+      />
+      <button type="button" class="btn-confirm" (click)="onAdd()">✓</button>
+      <button type="button" class="btn-cancel" (click)="onCancel()">×</button>
+    </div>
+  }
+</div>

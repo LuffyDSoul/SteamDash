@@ -1,0 +1,32 @@
+spring:
+  config:
+    import: optional:file:../../example.env[.properties]
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 120000
+        readTimeout: 120000
+        loggerLevel: full
+      apiconectorclient:
+        url: '${CONECTOR_URL}'
+      apiBackendClient:
+        url: '${MS_BACKEND_URL}/backend'
+        connectTimeout: 180000
+        readTimeout: 180000
+
+management:
+  endpoints:
+    web:
+      base-path: /metrics
+      exposure:
+        include: "health,info"
+server:
+  port :  9001
+  servlet:
+    contextPath: /bff
+  tomcat:
+    connection-timeout: 120000
+    threads:
+      max: 200

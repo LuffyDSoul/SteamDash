@@ -1,0 +1,6 @@
+<div class="hover-panel" *ngIf="game">
+  <div class="title">{{game.name}}</div>
+  <div class="info">Playtime: {{game.playtime_hours || 0}} hrs</div>
+  <div class="genres">{{game.genres?.join(', ')}}</div>
+</div>
+<div class="hover-panel empty" *ngIf="!game">Pase el cursor sobre un juego para ver detalles</div>

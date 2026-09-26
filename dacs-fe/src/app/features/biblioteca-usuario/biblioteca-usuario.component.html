@@ -1,0 +1,457 @@
+<!-- Overlay para bloquear header durante operaciones -->
+<div *ngIf="isOperationInProgress() && !showSyncComplete() && !showRefreshAllComplete()" class="header-overlay"></div>
+
+<div class="biblioteca-container">
+  <div class="header-section">
+    <h1>Biblioteca de Usuario</h1>
+    
+    <div class="search-section">
+      <input 
+        type="text" 
+        [(ngModel)]="inputSteamId" 
+        placeholder="Ingresa Steam ID"
+        class="steam-id-input"
+        [disabled]="isOperationInProgress()"
+        (keyup.enter)="buscarBiblioteca()"
+      />
+      <button 
+        (click)="buscarBiblioteca()" 
+        class="btn-search"
+        [disabled]="loading() || isOperationInProgress()"
+      >
+        {{ loading() ? 'Buscando...' : 'Buscar' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando biblioteca...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !loading()" class="error-state">
+    <i class="error-icon">⚠️</i>
+    <p>{{ error() }}</p>
+  </div>
+
+  <!-- Biblioteca Content -->
+  <div *ngIf="biblioteca() && !loading()" class="biblioteca-content">
+    <!-- User Info -->
+    <div class="user-info">
+      <img 
+        *ngIf="biblioteca()?.avatarUrl" 
+        [src]="biblioteca()?.avatarUrl" 
+        alt="Avatar"
+        class="user-avatar"
+      />
+      <div class="user-details">
+        <h2>{{ biblioteca()?.personaName || 'Usuario' }}</h2>
+        <p class="steam-id">Steam ID: {{ biblioteca()?.steamId }}</p>
+        <p class="total-games">Total de juegos: {{ biblioteca()?.totalJuegos || 0 }}</p>
+      </div>
+      
+      <!-- Botones de sincronización -->
+      <div class="sync-container">
+        <button 
+          class="btn-refresh-all"
+          (click)="refreshAllGames()"
+          [disabled]="!biblioteca()?.steamId || isOperationInProgress()"
+          title="Actualizar TODOS los juegos (precios, imágenes, tags, etc.)"
+        >
+          <span class="refresh-icon">{{ refreshingAllGames() ? '⏳' : '🔄' }}</span>
+          <span class="refresh-text">{{ refreshingAllGames() ? 'Actualizando...' : 'Actualizar Biblioteca Completa' }}</span>
+        </button>
+
+        <button 
+          class="btn-sync-library"
+          (click)="sincronizarBiblioteca()"
+          [disabled]="!biblioteca()?.steamId || isOperationInProgress()"
+          title="Sincronizar juegos nuevos con la base de datos"
+        >
+          <span class="sync-icon">{{ syncingLibrary() ? '⏳' : '🔄' }}</span>
+          <span class="sync-text">{{ syncingLibrary() ? 'Sincronizando...' : 'Sincronizar Biblioteca' }}</span>
+        </button>
+        
+        <p class="last-refresh" *ngIf="lastRefreshDate()">
+          Último refresh: {{ lastRefreshDate() }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Mensaje de progreso de sincronización -->
+    <div *ngIf="syncProgress()" class="sync-progress-message" [class.persistent]="showSyncComplete()">
+      <span>{{ syncProgress() }}</span>
+      <button *ngIf="showSyncComplete()" class="close-message-btn" (click)="closeSyncMessage()" title="Cerrar mensaje">
+        ✕
+      </button>
+    </div>
+    
+    <!-- Mensaje de progreso del refresh completo -->
+    <div *ngIf="refreshAllProgress()" class="refresh-all-progress-message" [class.persistent]="showRefreshAllComplete()">
+      <span>{{ refreshAllProgress() }}</span>
+      <button *ngIf="showRefreshAllComplete()" class="close-message-btn" (click)="closeRefreshAllMessage()" title="Cerrar mensaje">
+        ✕
+      </button>
+    </div>
+    
+    <!-- Banner de advertencia durante operaciones -->
+    <div *ngIf="isOperationInProgress() && !showSyncComplete() && !showRefreshAllComplete()" class="operation-banner">
+      <div class="banner-content">
+        <div class="banner-icon">⚠️</div>
+        <div class="banner-text">
+          <strong>Operación en progreso</strong>
+          <p>No cierres esta página. Algunos botones están deshabilitados temporalmente.</p>
+        </div>
+        <div class="spinner-small-banner"></div>
+      </div>
+    </div>
+
+    <!-- Toolbar de ordenamiento y búsqueda -->
+    <div class="games-toolbar">
+      <div class="toolbar-left">
+        <!-- Botón de juego aleatorio -->
+        <button 
+          class="btn-random-game"
+          (click)="irAJuegoAleatorio()"
+          [disabled]="!biblioteca()?.steamId || isOperationInProgress()"
+          title="Buscar un juego aleatorio de tu biblioteca"
+        >
+          🎲 Juego Aleatorio
+        </button>
+
+        <span class="toolbar-sep"></span>
+
+        <label class="toolbar-label">Ordenar por:</label>
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'alpha-asc'"
+          (click)="sortMode.set('alpha-asc')"
+          title="A → Z"
+        >A → Z</button>
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'alpha-desc'"
+          (click)="sortMode.set('alpha-desc')"
+          title="Z → A"
+        >Z → A</button>
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'hours-desc'"
+          (click)="sortMode.set('hours-desc')"
+          title="Horas (más a menos)"
+        >Horas ⬇</button>
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'hours-asc'"
+          (click)="sortMode.set('hours-asc')"
+          title="Horas (menos a más)"
+        >Horas ⬆</button>
+
+        <!-- Orden por últimas 2 semanas -->
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'hours2w-desc'"
+          (click)="sortMode.set('hours2w-desc')"
+          title="Horas 2 semanas (más a menos)"
+        >2 Sem ⬇</button>
+        <button 
+          class="btn-sort" 
+          [class.active]="sortMode() === 'hours2w-asc'"
+          (click)="sortMode.set('hours2w-asc')"
+          title="Horas 2 semanas (menos a más)"
+        >2 Sem ⬆</button>
+
+        <!-- Toggle de vista -->
+        <span class="toolbar-sep"></span>
+        <label class="toolbar-label">Vista:</label>
+        <div class="view-toggle">
+          <button 
+            class="btn-view" 
+            [class.active]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
+            title="Vista de grilla"
+          >🖼️</button>
+          <button 
+            class="btn-view" 
+            [class.active]="viewMode() === 'list'"
+            (click)="viewMode.set('list')"
+            title="Vista de lista"
+          >📋</button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <!-- Indicador Atlas activo (sin botón para activarlo aquí) -->
+        <ng-container *ngIf="atlasFilterActive()">
+          <div class="atlas-indicator" (click)="deactivateAtlas()" title="Click para desactivar el filtro Atlas">
+            🔞 Filtro Atlas activo
+            <button class="btn-close-atlas" (click)="deactivateAtlas(); $event.stopPropagation()">✕</button>
+          </div>
+        </ng-container>
+
+        <!-- Búsqueda por nombre -->
+        <input 
+          type="text" 
+          class="name-filter-input"
+          [ngModel]="searchText()"
+          (ngModelChange)="searchText.set($event)"
+          placeholder="Buscar por nombre..."
+        />
+
+        <!-- Dropdown de Tags -->
+        <div class="filters">
+          <button #filtersButton class="filters-button" (click)="toggleFilters()">
+            Filtros
+            <span class="filters-count" *ngIf="selectedTags().size">· {{ selectedTags().size }} tag(s)</span>
+            <span class="caret">▼</span>
+          </button>
+          
+          <!-- Panel de filtros dentro del contenedor -->
+          <div class="filters-panel" *ngIf="filtersOpen()">
+            <div class="filters-section" *ngIf="availableTags()?.length">
+              <label>Tags</label>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Buscar tags"
+                [ngModel]="tagSearchText()"
+                (ngModelChange)="tagSearchText.set($event)"
+              />
+              <div class="tags-list">
+                <ng-container *ngFor="let tag of filteredAvailableTags()">
+                  <!-- Opción especial para Atlas -->
+                  <label class="tag-item atlas-item" *ngIf="tag === 'Atlas'; else normalTag">
+                    <input
+                      type="checkbox"
+                      [checked]="atlasFilterActive()"
+                      (change)="toggleAtlasCheckbox($event.target.checked)"
+                    />
+                    <span>🔞 Atlas (NSFW)</span>
+                  </label>
+                  <ng-template #normalTag>
+                    <label class="tag-item">
+                      <input
+                        type="checkbox"
+                        [checked]="selectedTags().has(tag)"
+                        (change)="toggleTag(tag)"
+                      />
+                      <span>{{ tag }}</span>
+                    </label>
+                  </ng-template>
+                </ng-container>
+              </div>
+            </div>
+            <div class="filters-actions">
+              <button class="btn-clear" (click)="clearFilters()">Limpiar</button>
+              <button class="btn-apply" (click)="closeFilters()">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Backdrop para filtros (fuera del toolbar) -->
+    <div class="filters-backdrop" *ngIf="filtersOpen()" (click)="closeFilters()"></div>
+
+    <!-- Games Grid -->
+    <div class="games-grid" *ngIf="viewMode() === 'grid'">
+      <div 
+        *ngFor="let juego of filteredJuegos()" 
+        class="game-card"
+      >
+        <div class="game-image-container">
+          <img 
+            [src]="getHeaderImage(juego)" 
+            [alt]="juego.name"
+            class="game-image"
+            (error)="$event.target.src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+          />
+          <button 
+            class="btn-refresh"
+            (click)="refreshJuego(juego); $event.stopPropagation()"
+            [disabled]="isRefreshing(juego.appId) || isOperationInProgress()"
+            [title]="'Actualizar información de ' + juego.name"
+          >
+            <span *ngIf="!isRefreshing(juego.appId)">⭮</span>
+            <span *ngIf="isRefreshing(juego.appId)" class="spinner-small"></span>
+          </button>
+          <button 
+            class="btn-achievements"
+            (click)="toggleAchievements(juego); $event.stopPropagation()"
+            [class.active]="isAchievementsExpanded(juego.appId)"
+            [title]="'Ver logros de ' + juego.name"
+          >
+            <span *ngIf="!isLoadingAchievements(juego.appId)">🏆</span>
+            <span *ngIf="isLoadingAchievements(juego.appId)" class="spinner-small"></span>
+          </button>
+          <div *ngIf="juego.isBorrowed" class="borrowed-badge" title="Juego de préstamo familiar">
+            📤 Préstamo
+          </div>
+        </div>
+
+        <div class="game-info">
+          <h3 class="game-title" (click)="abrirEnSteam(juego.appId)">
+            {{ juego.name }}
+          </h3>
+          
+          <div class="game-details">
+            <div class="detail-row">
+              <span class="label">Precio:</span>
+              <span class="value" [class.free]="juego.isFree">
+                {{ juego.price || (juego.isFree ? 'Gratis' : 'N/A') }}
+              </span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">Tiempo jugado:</span>
+              <span class="value">{{ formatPlaytime(juego.playtimeForever) }}</span>
+            </div>
+            
+            <div *ngIf="juego.playtime2Weeks" class="detail-row">
+              <span class="label">Últimas 2 semanas:</span>
+              <span class="value">{{ formatPlaytime(juego.playtime2Weeks) }}</span>
+            </div>
+          </div>
+
+          <div class="game-actions">
+          </div>
+        </div>
+
+        <!-- Achievements expandable section for grid view -->
+        <div class="achievement-compact" *ngIf="isAchievementsExpanded(juego.appId)">
+          <div *ngIf="!isLoadingAchievements(juego.appId)">
+            <ng-container *ngIf="getAchievements(juego.appId) as ach">
+              <div *ngIf="ach.success" class="compact-achievement-content">
+                <div class="achievements-header">
+                  <h4 class="achievements-title">Logros</h4>
+                  <div class="achievements-progress">
+                    <div class="progress-text">{{ ach.unlockedAchievements }} / {{ ach.totalAchievements }} ({{ getAchievementProgress(juego.appId) }}%)</div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill" [style.width.%]="getAchievementProgress(juego.appId)">
+                        <span *ngIf="getAchievementProgress(juego.appId) > 15">{{ getAchievementProgress(juego.appId) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Grid view: NO mostrar imágenes de logros, solo barra de progreso -->
+              </div>
+              <div *ngIf="!ach.success" class="achievements-error">
+                <div>{{ ach.error }}</div>
+                <button class="btn-retry" (click)="retryAchievements(juego.appId); $event.stopPropagation()">
+                  ↻ Reintentar
+                </button>
+              </div>
+            </ng-container>
+          </div>
+          <div *ngIf="isLoadingAchievements(juego.appId)" class="achievements-loading">
+            <div class="spinner-small"></div>
+            <span>Cargando logros...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Games List -->
+    <div class="games-list" *ngIf="viewMode() === 'list'">
+      <div class="list-header">
+        <div class="col col-game">Juego</div>
+        <div class="col col-hours">Tiempo jugado</div>
+        <div class="col col-hours2">Últ. 2 semanas</div>
+        <div class="col col-price">Precio</div>
+        <div class="col col-actions">Acciones</div>
+      </div>
+      <ng-container *ngFor="let juego of filteredJuegos()">
+        <div class="list-row" [class.has-achievements]="isAchievementsExpanded(juego.appId)">
+          <div class="col col-game">
+            <div class="list-thumb-container">
+              <img class="list-thumb" [src]="getHeaderImage(juego)" [alt]="juego.name"
+                (error)="$event.target.src='https://via.placeholder.com/200x94?text=Sin+Imagen'" />
+              <div *ngIf="juego.isBorrowed" class="borrowed-badge" title="Juego de préstamo familiar">
+                📤 Préstamo
+              </div>
+            </div>
+            <div class="list-title" (click)="abrirEnSteam(juego.appId)">{{ juego.name }}</div>
+          </div>
+          <div class="col col-hours">{{ formatPlaytime(juego.playtimeForever) }}</div>
+          <div class="col col-hours2">{{ juego.playtime2Weeks ? formatPlaytime(juego.playtime2Weeks) : '—' }}</div>
+          <div class="col col-price">
+            <span class="value" [class.free]="juego.isFree">
+              {{ juego.price || (juego.isFree ? 'Gratis' : 'N/A') }}
+            </span>
+          </div>
+          <div class="col col-actions">
+            <button 
+              class="btn-achievements small"
+              (click)="toggleAchievements(juego); $event.stopPropagation()"
+              [class.active]="isAchievementsExpanded(juego.appId)"
+              [title]="'Ver logros de ' + juego.name"
+            >
+              <span *ngIf="!isLoadingAchievements(juego.appId)">🏆</span>
+              <span *ngIf="isLoadingAchievements(juego.appId)" class="spinner-small"></span>
+            </button>
+            <button 
+              class="btn-refresh small"
+              (click)="refreshJuego(juego); $event.stopPropagation()"
+              [disabled]="isRefreshing(juego.appId) || isOperationInProgress()"
+              [title]="'Actualizar información de ' + juego.name"
+            >
+              <span *ngIf="!isRefreshing(juego.appId)">⭮</span>
+              <span *ngIf="isRefreshing(juego.appId)" class="spinner-small"></span>
+            </button>
+          </div>
+          
+          <!-- Achievements expandable section within the same row -->
+          <div class="col col-achievements" *ngIf="isAchievementsExpanded(juego.appId)">
+            <div class="achievements-section-list">
+              <div *ngIf="!isLoadingAchievements(juego.appId)">
+                <ng-container *ngIf="getAchievements(juego.appId) as ach">
+                  <div *ngIf="ach.success" class="achievements-content">
+                    <div class="achievements-header">
+                      <h4 class="achievements-title">Logros de {{ juego.name }}</h4>
+                      <div class="achievements-progress">
+                        <div class="progress-text">{{ ach.unlockedAchievements }} / {{ ach.totalAchievements }} logros ({{ getAchievementProgress(juego.appId) }}%)</div>
+                        <div class="progress-bar-container">
+                          <div class="progress-bar-fill" [style.width.%]="getAchievementProgress(juego.appId)">
+                            <span *ngIf="getAchievementProgress(juego.appId) > 15">{{ getAchievementProgress(juego.appId) }}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="achievements-grid">
+                        <div class="achievement-item" 
+                          *ngFor="let achievement of ach.achievements"
+                          [attr.data-tooltip]="getAchievementTooltip(achievement.displayName, achievement.description)"
+                          [appTooltipOverlay]="getAchievementTooltip(achievement.displayName, achievement.description)">
+                        <img [src]="achievement.achieved ? achievement.icon : achievement.icongray" 
+                             [alt]="achievement.displayName"
+                             class="achievement-icon"
+                             [class.unlocked]="achievement.achieved"
+                             [class.locked]="!achievement.achieved"
+                             (error)="$event.target.src='https://via.placeholder.com/64x64?text=?'" />
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="!ach.success" class="achievements-error">
+                    <div>{{ ach.error }}</div>
+                    <button class="btn-retry" (click)="retryAchievements(juego.appId); $event.stopPropagation()">
+                      ↻ Reintentar
+                    </button>
+                  </div>
+                </ng-container>
+              </div>
+              <div *ngIf="isLoadingAchievements(juego.appId)" class="achievements-loading">
+                <div class="spinner-small"></div>
+                <span>Cargando logros...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredJuegos()?.length === 0" class="empty-state">
+      <p>Este usuario no tiene juegos en su biblioteca o su perfil es privado.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="user-card">
+  <div class="left">
+    <div class="avatar" [style.background-image]="'url(' + (user.avatarUrl || '') + ')'">
+      <div class="empty-avatar" *ngIf="!user.avatarUrl">?</div>
+    </div>
+  </div>
+
+  <div class="mid">
+    <div class="name-row">
+      <div class="name">{{ user.personaName || user.steamId || 'Sin datos' }}</div>
+      <button class="edit" (click)="startEdit()" title="Editar">✎</button>
+    </div>
+
+    <div *ngIf="(user.games?.length || 0) > 0; else emptyState" class="chips">
+      <div class="chip">Horas: {{ user.totalHours || 0 }}</div>
+      <div class="chip">Juegos: {{ user.games?.length || 0 }}</div>
+      <div class="chip">Únicos: <!-- placeholder, computed by parent --> -</div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty">Seleccioná un usuario de Steam</div>
+    </ng-template>
+
+    <div class="created" *ngIf="user.createdAt">Created at: {{ user.createdAt }}</div>
+  </div>
+
+  <div class="right">
+    <button class="remove" (click)="onRemove()">Eliminar</button>
+  </div>
+
+  <!-- Inline editor for entering steamId when adding -->
+  <div class="editor" *ngIf="editingLocal">
+    <input [(ngModel)]="inputId" placeholder="Steam ID or username" />
+    <div class="controls">
+      <button (click)="confirmEdit()">Agregar</button>
+      <button (click)="cancelEdit()">Cancelar</button>
+    </div>
+  </div>
+</div>

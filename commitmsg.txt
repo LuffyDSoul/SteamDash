@@ -1,0 +1,17 @@
+chore: Documentar cambios recientes y plan para integración con SteamSpy tags
+
+Cambios incluidos:
+- DTO Tags añadidos (BFF y Backend)
+- Campo tags agregado a GameInfo y JuegoComparacionDto
+- Estadísticas agregadas en el backend (juegosComunes, juegosUnicos, porcentajeSimilitud, categoria)
+- headerImage en BFF marcado como no disponible en owned games API
+
+Plan de implementación con SteamSpy (pendiente):
+- Implementar integración con SteamSpy para obtener 'tags' y 'genres' por appId.
+- Mezclar 'genre' + 'tags' de SteamSpy en la lista final de tags por app.
+- Cada llamada a appdetails o SteamSpy debe respetar rate limit: esperar al menos 1 segundo entre llamadas.
+- Crear tabla/base de datos para almacenar tags por appId y permitir batch/caching con TTL.
+- Implementar job batch o cache populator que recupere tags en background (respetando rate limits).
+- Añadir tests e infra para monitorizar fallos y reintentos.
+
+Nota: Este commit solo documenta el plan y añade DTOs; no se realiza la conexión con SteamSpy.

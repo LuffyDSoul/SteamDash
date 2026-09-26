@@ -1,0 +1,5 @@
+.hover-panel{background:rgba(255,255,255,0.02);padding:0.8rem;border-radius:8px}
+.hover-panel.empty{color:var(--muted);text-align:center}
+.title{font-weight:700;margin-bottom:0.4rem}
+.info{font-size:0.95rem;color:var(--muted);margin-bottom:0.4rem}
+.genres{font-size:0.9rem;color:var(--muted)}

@@ -1,0 +1,67 @@
+<a class="skip" href="#main"></a>
+    <header class="toolbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <a routerLink="/" class="brand-link">SteamDash</a>
+      </div>
+
+      <!-- Desktop nav -->
+      <nav class="nav">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/biblioteca" routerLinkActive="active">Biblioteca</a>
+        <a routerLink="/estadisticas" routerLinkActive="active">Estadísticas</a>
+        <a routerLink="/compare" routerLinkActive="active">Comparar</a>
+        <a routerLink="/news" routerLinkActive="active">Noticias</a>
+      </nav>
+
+      <div class="spacer"></div>
+
+      <!-- User Profile -->
+      <div class="user-profile" *ngIf="isLoggedIn">
+        <button class="user-btn" (click)="toggleUserMenu()" aria-label="Menú de usuario">
+          <div class="user-avatar">{{ getUsername()[0].toUpperCase() || 'U' }}</div>
+          <span class="user-name">{{ getUsername() }}</span>
+        </button>
+        
+        <div class="user-menu" *ngIf="showUserMenu">
+          <div class="user-menu-header">
+            <div class="user-avatar-large">{{ getUsername()[0].toUpperCase() || 'U' }}</div>
+            <div class="user-info">
+              <div class="user-fullname">{{ getFullName() || getUsername() }}</div>
+              <div class="user-email">{{ getEmail() }}</div>
+            </div>
+          </div>
+          <div class="user-menu-divider"></div>
+          <button class="user-menu-item" (click)="goToAccount()">
+            <span class="user-menu-icon">⚙️</span>
+            <span>Configuración de cuenta</span>
+          </button>
+          <div class="user-menu-divider"></div>
+          <button class="user-menu-item danger" (click)="logout()">
+            <span class="user-menu-icon">🚪</span>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="actions" *ngIf="!isLoggedIn">
+        <button class="btn primary" (click)="login()">Iniciar sesión</button>
+      </div>
+
+      <!-- Mobile burger -->
+      <input id="nav-toggle" type="checkbox" class="nav-toggle" aria-label="Abrir menú" />
+      <label for="nav-toggle" class="burger" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+      <nav class="nav-mobile">
+        <a routerLink="/" (click)="closeMenu()" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/biblioteca" (click)="closeMenu()" routerLinkActive="active">Biblioteca</a>
+        <a routerLink="/estadisticas" (click)="closeMenu()" routerLinkActive="active">Estadísticas</a>
+        <a routerLink="/compare" (click)="closeMenu()" routerLinkActive="active">Comparar</a>
+        <a routerLink="/news" (click)="closeMenu()" routerLinkActive="active">Noticias</a>
+        <div class="nav-mobile-divider" *ngIf="isLoggedIn"></div>
+        <button class="nav-mobile-logout" *ngIf="isLoggedIn" (click)="logout()">
+          <span>🚪</span> Cerrar sesión
+        </button>
+      </nav>
+    </header>

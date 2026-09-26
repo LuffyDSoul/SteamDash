@@ -1,0 +1,4 @@
+.hover-panel{background:#071018;border:1px solid rgba(120,180,255,0.06);padding:12px;border-radius:8px;color:#dff4ff;width:260px}
+.hover-panel .title{font-weight:800;margin-bottom:8px}
+.hover-panel .owners{font-size:13px;color:#9fb9d8;margin-top:8px}
+.hover-empty{color:#8fa8bf}

@@ -1,0 +1,45 @@
+<section class="compare-shell">
+  <header class="top">
+    <h1>Comparativa de bibliotecas</h1>
+    <div class="controls">
+      <button class="toggle" (click)="toggleView()">{{ viewMode() === 'compare' ? 'Ver como biblioteca' : 'Comparativa' }}</button>
+    </div>
+  </header>
+
+  <main>
+    <div *ngIf="viewMode() === 'compare'">
+      <div class="grid">
+        <ng-container *ngFor="let u of users(); let i = index">
+          <user-compare-card [user]="u" (save)="addOrUpdateUser($event, i)" (remove)="removeUser($event)"></user-compare-card>
+        </ng-container>
+
+        <add-user-slot *ngIf="users().length < 6" (add)="requestAdd()"></add-user-slot>
+      </div>
+    </div>
+
+    <div *ngIf="viewMode() === 'library'" class="library-view">
+      <div class="filters">
+        <div class="left">
+          <button class="grid-btn">☰</button>
+          <input placeholder="Name / Game" [(ngModel)]="filterName" />
+          <input placeholder="Tags (comma)" [(ngModel)]="filterTags" />
+          <label class="sex">
+            <input type="checkbox" [(ngModel)]="showSexContent" /> Mostrar juegos con contenido sexual
+          </label>
+        </div>
+        <div class="right">
+          <div class="avatars">
+            <div class="a" *ngFor="let u of users()" [style.background-image]="'url(' + (u.avatarUrl || '') + ')'"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="games-area">
+        <library-grid [games]="filteredGames()" (hover)="onHover($event)"></library-grid>
+        <aside class="hover-panel">
+          <game-hover-panel [game]="hoveredGame()"></game-hover-panel>
+        </aside>
+      </div>
+    </div>
+  </main>
+</section>

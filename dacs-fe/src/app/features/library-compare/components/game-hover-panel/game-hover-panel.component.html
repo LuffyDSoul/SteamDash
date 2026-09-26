@@ -1,0 +1,10 @@
+<div class="hover-panel" *ngIf="game">
+  <div class="title">{{game.name}}</div>
+  <div class="meta">Owners: {{ game.copies }}</div>
+  <div class="owners">
+    <div *ngFor="let o of game?.owners">{{o.steamId}} — {{o.playtime_hours || 0}} hrs</div>
+  </div>
+  <div class="genres">{{game.genres?.join(', ')}}</div>
+  <a *ngIf="game?.headerImage" [href]="game.headerImage" target="_blank">View image</a>
+</div>
+<div class="hover-empty" *ngIf="!game">Hover a game to see details</div>

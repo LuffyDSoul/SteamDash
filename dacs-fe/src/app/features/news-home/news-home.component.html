@@ -1,0 +1,254 @@
+<div class="news-home">
+  <h2>Noticias de Juegos de Steam</h2>
+
+  <!-- Sección de búsqueda por Steam ID -->
+  <section class="user-news-section">
+    <h3>Ver noticias de tus juegos</h3>
+    <div class="search-top">
+      <input 
+        class="input" 
+        [(ngModel)]="steamId" 
+        placeholder="Ingresa tu Steam ID (ej: 76561198037867202)" 
+        (keyup.enter)="loadUserGamesNews()" 
+      />
+      <button class="btn" (click)="loadUserGamesNews()" [disabled]="loadingUserNews">
+        {{ loadingUserNews ? 'Cargando...' : 'Cargar Noticias' }}
+      </button>
+    </div>
+
+    <!-- Perfil del jugador -->
+    <div *ngIf="playerProfile" class="player-profile">
+      <img [src]="playerProfile.avatarfull" [alt]="playerProfile.personaname" class="player-avatar" />
+      <div class="player-info">
+        <h4>{{ playerProfile.personaname }}</h4>
+        <p class="player-meta">
+          <span *ngIf="playerProfile.loccountrycode">{{ playerProfile.loccountrycode }}</span>
+          <span *ngIf="playerProfile.timecreated"> | Miembro desde {{ playerProfile.timecreated * 1000 | date:'MMM yyyy' }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="loadingUserNews" class="loading">Cargando noticias...</div>
+    
+    <!-- Error state -->
+    <div *ngIf="error && selectedFilter !== 'favorites'" class="error">{{ error }}</div>
+
+    <!-- Layout principal con búsqueda -->
+    <div *ngIf="!loadingUserNews && playerProfile" class="main-layout">
+      <!-- Panel izquierdo: Filtros y Estadísticas -->
+      <aside class="filters-panel">
+        <h4>Filtros</h4>
+        <div class="filter-options">
+          <button 
+            class="filter-btn" 
+            [class.active]="selectedFilter === 'recentlyPlayed'"
+            (click)="applyFilter('recentlyPlayed')"
+          >
+            🕒 Jugados Recientemente
+          </button>
+          <button 
+            class="filter-btn" 
+            [class.active]="selectedFilter === 'all'"
+            (click)="applyFilter('all')"
+          >
+            🎮 Todos los Juegos
+          </button>
+          <button 
+            class="filter-btn" 
+            [class.active]="selectedFilter === 'favorites'"
+            (click)="applyFilter('favorites')"
+          >
+            ⭐ Favoritos
+          </button>
+        </div>
+        
+        <!-- Búsqueda por nombre de juego -->
+        <div class="search-box" *ngIf="allGamesNews.length > 0">
+          <h4>🔍 Buscar</h4>
+          <div class="search-input-group">
+            <input 
+              class="input search-input" 
+              [(ngModel)]="gameNameSearchTerm" 
+              placeholder="Nombre del juego..." 
+              (input)="applyGameNameSearch()"
+            />
+            <button 
+              class="btn-clear" 
+              *ngIf="gameNameSearchTerm" 
+              (click)="clearGameNameSearch()"
+              title="Limpiar búsqueda"
+            >
+              ✕
+            </button>
+          </div>
+          <p class="search-results" *ngIf="gameNameSearchTerm">
+            {{ filteredGamesNews.length }} resultado{{ filteredGamesNews.length !== 1 ? 's' : '' }}
+          </p>
+        </div>
+        
+        <div class="stats" *ngIf="allGamesNews.length > 0">
+          <p><strong>{{ allGamesNews.length }}</strong> juegos totales</p>
+          <p><strong>{{ filteredGamesNews.length }}</strong> filtrados</p>
+          <p><strong>{{ userGamesNews.length }}</strong> mostrando en esta página</p>
+          <p *ngIf="filteredGamesNews.length > pageSize">Página {{ currentPage + 1 }} de {{ Math.ceil(filteredGamesNews.length / pageSize) }}</p>
+        </div>
+      </aside>
+
+      <!-- Contenido central: Noticias -->
+      <div class="news-content">
+        <!-- Mensaje cuando no hay juegos jugados recientemente -->
+        <div *ngIf="selectedFilter === 'recentlyPlayed' && userGamesNews.length === 0 && !loadingUserNews" class="empty-state">
+          <p>No has jugado ningún juego recientemente (últimas 2 semanas).</p>
+          <p>Cambia al filtro "🎮 Todos los Juegos" para ver todos tus juegos.</p>
+        </div>
+        
+        <!-- Mensaje cuando no hay favoritos -->
+        <div *ngIf="selectedFilter === 'favorites' && userGamesNews.length === 0 && !loadingUserNews" class="empty-state">
+          <p>No tienes juegos favoritos guardados.</p>
+          <p>Agrega juegos a favoritos usando el botón ⭐ cuando veas otros filtros.</p>
+        </div>
+
+        <!-- Cada juego con sus noticias -->
+        <div *ngFor="let game of userGamesNews" class="game-news-card">
+          <!-- Header del juego con imagen a la izquierda -->
+          <div class="game-header">
+            <img 
+              [src]="getGameImage(game)" 
+              [alt]="game.gameName" 
+              class="game-image"
+              (error)="onImageError($event, game)"
+            />
+            <div class="game-info">
+              <h4>
+                {{ game.gameName }}
+                <button 
+                  class="btn-favorite" 
+                  (click)="toggleFavorite(game)"
+                  [class.is-favorite]="isFavorite(game.appId)"
+                  title="{{ isFavorite(game.appId) ? 'Quitar de favoritos' : 'Agregar a favoritos' }}"
+                >
+                  {{ isFavorite(game.appId) ? '★' : '☆' }}
+                </button>
+              </h4>
+              <p class="game-meta">
+                App ID: {{ game.appId }} | 
+                {{ game.totalNewsCount }} {{ game.totalNewsCount === 1 ? 'noticia' : 'noticias' }}
+                <span *ngIf="game.lastNewsDate"> | Última: {{ formatDate(game.lastNewsDate) }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Últimas 2 noticias (siempre visibles) -->
+          <div class="latest-news" *ngIf="game.latestNews && game.latestNews.length > 0">
+            <div *ngFor="let news of game.latestNews" class="news-item" [class.new-news]="isNewsRecent(news.date)">
+              <div class="news-header">
+                <h5>
+                  {{ news.title }}
+                  <span *ngIf="isNewsRecent(news.date)" class="new-badge">NUEVA</span>
+                </h5>
+                <span class="news-date">{{ formatDate(news.date) }}</span>
+              </div>
+              <div class="news-content" [innerHTML]="sanitizeHtml(truncate(news.contents, 250))"></div>
+              <div class="news-footer">
+                <span class="news-author" *ngIf="news.author">Por: {{ news.author }}</span>
+                <button class="btn-link" (click)="openNews(news.url)">Leer más →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón para mostrar noticias antiguas -->
+          <div *ngIf="game.olderNews && game.olderNews.length > 0" class="older-news-toggle">
+            <button class="btn-toggle" (click)="toggleShowAllNews(game)">
+              {{ game.showAllNews ? '▲ Ocultar' : '▼ Ver' }} {{ game.olderNews.length }} noticias antiguas
+            </button>
+          </div>
+
+          <!-- Noticias antiguas (colapsables) -->
+          <div *ngIf="game.showAllNews && game.olderNews && game.olderNews.length > 0" class="older-news">
+            <div *ngFor="let news of game.olderNews" class="news-item older">
+              <div class="news-header">
+                <h5>{{ news.title }}</h5>
+                <span class="news-date">{{ formatDate(news.date) }}</span>
+              </div>
+              <div class="news-content" [innerHTML]="sanitizeHtml(truncate(news.contents, 150))"></div>
+              <div class="news-footer">
+                <span class="news-author" *ngIf="news.author">Por: {{ news.author }}</span>
+                <button class="btn-link" (click)="openNews(news.url)">Leer más →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje si no hay noticias -->
+          <div *ngIf="(!game.latestNews || game.latestNews.length === 0) && (!game.olderNews || game.olderNews.length === 0)" class="no-news">
+            <p>No hay noticias disponibles para este juego</p>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination" *ngIf="filteredGamesNews.length > pageSize">
+          <button 
+            class="btn btn-page-jump" 
+            [disabled]="currentPage === 0" 
+            (click)="goToFirstPage()"
+            title="Ir a la primera página"
+          >
+            ⏮ Primera
+          </button>
+          <button 
+            class="btn" 
+            [disabled]="currentPage === 0" 
+            (click)="loadPreviousPage()"
+          >
+            ← Anterior
+          </button>
+          <span class="page-info">Página {{ currentPage + 1 }} de {{ Math.ceil(allGamesNews.length / pageSize) }}</span>
+          <button 
+            class="btn" 
+            [disabled]="!hasMoreGames()" 
+            (click)="loadNextPage()"
+          >
+            Siguiente →
+          </button>
+          <button 
+            class="btn btn-page-jump" 
+            [disabled]="!hasMoreGames()" 
+            (click)="goToLastPage()"
+            title="Ir a la última página"
+          >
+            Última ⏭
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel derecho: Búsqueda de juego -->
+      <aside class="search-panel">
+        <h4>Buscar Juego por App ID</h4>
+        <div class="search-box">
+          <input 
+            class="input" 
+            [(ngModel)]="gameSearchTerm" 
+            placeholder="App ID (ej: 730)" 
+            (keyup.enter)="searchGame()" 
+          />
+          <button class="btn" (click)="searchGame()">Buscar Noticias</button>
+        </div>
+
+        <!-- Loading state -->
+        <div *ngIf="loadingGameSearch" class="loading-small">Buscando noticias...</div>
+
+        <!-- Info -->
+        <div class="search-info">
+          <p style="font-size: 12px; color: #666; margin-top: 10px;">
+            Ingresa un App ID de Steam para ver solo las noticias de ese juego.
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loadingUserNews && userGamesNews.length === 0 && steamId && !error" class="empty-state">
+      <p>No se encontraron juegos para este usuario. Verifica que el perfil sea público.</p>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,8 @@
+.library-grid .empty{color:var(--muted);padding:2rem;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
+.game-card{background:rgba(255,255,255,0.02);border-radius:8px;cursor:pointer;overflow:hidden;transition:transform 0.3s ease,box-shadow 0.3s ease}
+.game-card:hover{transform:translateY(-4px);box-shadow:0 4px 12px rgba(110,231,255,0.2)}
+.game-card .title{font-weight:600;padding:0.5rem 0.75rem 0.25rem;font-size:0.9rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;min-height:2.6em}
+.game-card .meta{font-size:0.8rem;color:var(--muted);padding:0 0.75rem 0.75rem}
+
+.game-card .thumb{width:100%;aspect-ratio:2/3;background-size:cover;background-position:center;background-color:rgba(0,0,0,0.3)}

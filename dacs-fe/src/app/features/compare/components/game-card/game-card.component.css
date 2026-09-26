@@ -1,0 +1,310 @@
+.game-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(110, 231, 255, 0.3);
+}
+
+.game-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3; /* Ratio 2:3 para imágenes verticales (600x900) */
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.game-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-image {
+  transform: scale(1.05);
+}
+
+/* Placeholder para juegos sin imagen */
+.game-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(110, 231, 255, 0.05) 0%, rgba(110, 231, 255, 0.1) 100%);
+  color: rgba(110, 231, 255, 0.5);
+}
+
+.game-image-placeholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+}
+
+.placeholder-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+
+/* Overlay que se desliza desde abajo */
+.game-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 70%, transparent 100%);
+  padding: 1.5rem 1rem 1rem 1rem;
+  transform: translateY(calc(100% - 50px)); /* Muestra solo un poco al inicio */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.game-card:hover .game-overlay {
+  transform: translateY(0); /* Desliza completamente hacia arriba */
+}
+
+.game-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s;
+}
+
+.game-card:hover .game-tags {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(110, 231, 255, 0.2);
+  border: 1px solid rgba(110, 231, 255, 0.4);
+  border-radius: 6px;
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  transition: all 0.2s;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.6em; /* Asegura espacio para 2 líneas */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease 0.12s, transform 0.3s ease 0.12s;
+}
+
+.game-card:hover .game-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.game-title-link {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+
+.game-title-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.game-price {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 0.25rem 0.5rem;
+  background: rgba(110, 231, 255, 0.15);
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s;
+}
+
+.game-card:hover .game-price {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Avatares miniatura de los dueños */
+.game-owners {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+}
+
+.game-card:hover .game-owners {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.owner-mini-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.owner-mini-avatar:hover {
+  transform: scale(1.15);
+  border-color: #7ff0ff;
+}
+
+/* Badge de copias */
+.copies-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  cursor: help;
+}
+
+.copies-number {
+  display: block;
+}
+
+/* Tooltip de propietarios */
+.owners-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.75rem;
+  min-width: 150px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.copies-badge:hover .owners-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.owners-avatars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.owner-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.owner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.owner-avatar:hover {
+  transform: scale(1.1);
+  border-color: #7ff0ff;
+}
+
+.owner-name {
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .game-image-wrapper {
+    aspect-ratio: 2 / 3;
+  }
+
+  .game-overlay {
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+    transform: translateY(calc(100% - 40px));
+  }
+
+  .game-title {
+    font-size: 0.9rem;
+  }
+
+  .tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .copies-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}

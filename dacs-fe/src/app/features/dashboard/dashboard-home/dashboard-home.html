@@ -1,0 +1,40 @@
+ <main class="container">
+      <div class="grid cols-4">
+        <section class="span-12 card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div class="badge">Gaming · Dark UI</div>
+          <div style="margin-left:auto; display:flex; gap:10px; width:min(520px, 100%);">
+            <input class="input" [formControl]="search" placeholder="Buscar juego..." />
+            <select class="select" [formControl]="genre">
+              <option value="all">Todos los géneros</option>
+              <option value="moba">MOBA</option>
+              <option value="fps">FPS</option>
+              <option value="coop">Coop</option>
+              <option value="rpg">RPG</option>
+              <option value="action">Action</option>
+            </select>
+            <a class="btn btn-primary" routerLink="/compare">Comparar Biblioteca</a>
+          </div>
+        </section>
+
+        <section class="span-5 card">
+          <h3>Tu biblioteca</h3>
+          <app-library-list />
+        </section>
+
+        <section class="span-4 card">
+          <h3>Logros</h3>
+          <app-achievements />
+        </section>
+
+        <section class="span-3 card">
+          <h3>Steam News</h3>
+          <app-news-feed />
+        </section>
+
+        
+        <section class="span-3 card">
+          <h3>Playtime</h3>
+          <app-playtime-chart />
+        </section>
+      </div>
+    </main>

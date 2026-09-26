@@ -1,0 +1,34 @@
+spring:
+  config:
+    import: optional:file:../../example.env[.properties]
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 60000
+        readTimeout: 60000
+        loggerLevel: basic
+      apiClient:
+        url: '${API_URL}'
+      steamApiClient:
+        url: '${STEAM_STORE_API_URL}'
+      steamWebApiClient:
+        url: '${STEAM_WEB_API_URL}'
+
+steam:
+  api:
+    key: '${STEAM_API_KEY}'
+    store-url: '${STEAM_STORE_API_URL}'
+    web-url: '${STEAM_WEB_API_URL}'
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "health,info"
+server:
+  port: 9002
+  servlet:
+    contextPath: /conector

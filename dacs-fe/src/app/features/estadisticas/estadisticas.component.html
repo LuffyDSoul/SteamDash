@@ -1,0 +1,455 @@
+<!-- Overlay para bloquear header durante operaciones -->
+<div *ngIf="syncingAchievements()" class="header-overlay"></div>
+
+<div class="estadisticas-container">
+  <!-- Header with search -->
+  <div class="stats-header">
+    <h1 class="stats-title">Estadísticas de tu Biblioteca Steam</h1>
+    <p class="stats-subtitle">Descubre cómo juegas y gestiona tu colección</p>
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="inputSteamId"
+        (keyup.enter)="buscarEstadisticas()"
+        placeholder="Ingresa tu Steam ID..."
+        class="steam-input"
+        [disabled]="isOperationInProgress()"
+      />
+      <button class="btn-search" (click)="buscarEstadisticas()" [disabled]="isOperationInProgress()">
+        🔍 Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error() && !loading()" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error() }}</p>
+    <button class="btn-retry" (click)="loadEstadisticas()">Reintentar</button>
+  </div>
+
+  <!-- Statistics content -->
+  <div *ngIf="estadisticas() && !loading()" class="stats-content">
+    
+    <!-- User Info -->
+    <div class="user-card">
+      <img 
+        *ngIf="estadisticas()?.avatarUrl" 
+        [src]="estadisticas()?.avatarUrl" 
+        alt="Avatar"
+        class="user-avatar-large"
+      />
+      <div class="user-details">
+        <h2>{{ estadisticas()?.personaName || 'Usuario' }}</h2>
+        <p class="steam-id">Steam ID: {{ estadisticas()?.steamId }}</p>
+        
+        <div class="user-stats-row">
+          <div class="user-stat-item">
+            <span class="user-stat-icon">🎮</span>
+            <div class="user-stat-data">
+              <span class="user-stat-value">{{ estadisticas()?.totalJuegos || 0 }}</span>
+              <span class="user-stat-label">juegos</span>
+            </div>
+          </div>
+          
+          <div class="user-stat-item">
+            <span class="user-stat-icon">💰</span>
+            <div class="user-stat-data">
+              <span class="user-stat-value">{{ formatPrecio(estadisticas()?.totalGastado || 0) }}</span>
+              <span class="user-stat-label">invertidos</span>
+            </div>
+          </div>
+          
+          <div class="user-stat-item">
+            <span class="user-stat-icon">⏱️</span>
+            <div class="user-stat-data">
+              <span class="user-stat-value">{{ formatHorasCompletas(estadisticas()?.horasTotalesJugadas || 0) }}</span>
+              <span class="user-stat-label">jugadas</span>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn-biblioteca" (click)="irABiblioteca()" [disabled]="isOperationInProgress()">
+          📚 Ver Biblioteca Completa
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+      
+      <!-- 1. Juegos sin jugar -->
+      <div class="stat-card highlight">
+        <div class="card-header">
+          <h3>🎮 Juegos sin estrenar</h3>
+        </div>
+        <div class="card-body">
+          <div class="stat-main">
+            <div class="stat-number">{{ estadisticas()?.juegosSinJugar?.cantidad }}</div>
+            <div class="stat-label">juegos en tu colección que aún no has probado</div>
+          </div>
+          <div class="stat-secondary">
+            <span class="percentage">{{ formatPorcentaje(estadisticas()?.juegosSinJugar?.porcentaje || 0) }}</span>
+            <span class="percentage-label">de tu biblioteca</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Clasificación gratuitos vs pagos -->
+      <div class="stat-card">
+        <div class="card-header">
+          <h3>💰  Juegos gratuidos vs de pago</h3>
+        </div>
+        <div class="card-body">
+          <div class="classification-row">
+            <div class="classification-item free">
+              <div class="classification-icon">🆓</div>
+              <div class="classification-data">
+                <div class="classification-number">{{ estadisticas()?.clasificacionPrecio?.juegosGratuitos }}</div>
+                <div class="classification-label">Gratuitos</div>
+                <div class="classification-percentage">{{ formatPorcentaje(estadisticas()?.clasificacionPrecio?.porcentajeGratuitos || 0) }}</div>
+              </div>
+            </div>
+            <div class="classification-item paid">
+              <div class="classification-icon">💵</div>
+              <div class="classification-data">
+                <div class="classification-number">{{ estadisticas()?.clasificacionPrecio?.juegosPagos }}</div>
+                <div class="classification-label">Pagos</div>
+                <div class="classification-percentage">{{ formatPorcentaje(estadisticas()?.clasificacionPrecio?.porcentajePagos || 0) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Dinero desperdiciado -->
+      <div class="stat-card danger">
+        <div class="card-header">
+          <h3>💸 Inversión sin aprovechar</h3>
+        </div>
+        <div class="card-body">
+          <div class="stat-main">
+            <div class="stat-number money">{{ formatPrecio(estadisticas()?.dineroDesperdiciado?.totalDesperdiciado || 0) }}</div>
+            <div class="stat-label">en juegos que aún no has probado</div>
+          </div>
+          <div class="stat-details">
+            <div class="detail-item">
+              <span class="detail-label">Juegos comprados sin jugar:</span>
+              <span class="detail-value">{{ estadisticas()?.dineroDesperdiciado?.cantidadJuegos }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Porcentaje de tu inversión:</span>
+              <span class="detail-value">{{ formatPorcentaje(estadisticas()?.dineroDesperdiciado?.porcentajeDelGastoTotal || 0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Top 10 más jugados -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>🏆 Top 10 juegos más jugados</h2>
+      </div>
+      <div class="top-games-grid">
+        <div 
+          *ngFor="let juego of estadisticas()?.top10MasJugados; let i = index" 
+          class="top-game-card"
+          (click)="abrirEnSteam(juego.appId)"
+        >
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="game-image-container">
+            <img 
+              [src]="getHeaderImage(juego.appId, juego.headerImage)" 
+              [alt]="juego.name"
+              class="game-image"
+              [class.blurred]="isNSFWGame(juego.tags, juego.name) && !isGameUnblurred(juego.appId)"
+              (error)="$any($event.target).src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+            />
+            <div 
+              *ngIf="isNSFWGame(juego.tags, juego.name) && !isGameUnblurred(juego.appId)"
+              class="blur-overlay"
+              (click)="toggleBlur(juego.appId, $event)"
+            >
+              <div class="blur-icon">🔒</div>
+              <div class="blur-text">Click para ver</div>
+            </div>
+          </div>
+          <div class="game-info">
+            <h4 class="game-title">{{ juego.name }}</h4>
+            <div class="game-hours">
+              <span class="hours-value">{{ formatHoras(juego.horasTotales) }}</span>
+              <span class="hours-label">jugadas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 5 juegos jugados recientemente -->
+    <div class="section-card" *ngIf="(estadisticas()?.top5Recientes?.length ?? 0) > 0">
+      <div class="section-header">
+        <h2>🔥 Jugados recientemente</h2>
+        <p class="section-subtitle">Lo que has estado jugando en las últimas 2 semanas</p>
+      </div>
+      <div class="top-games-grid">
+        <div 
+          *ngFor="let juego of estadisticas()?.top5Recientes; let i = index" 
+          class="top-game-card"
+          (click)="abrirEnSteam(juego.appId)"
+        >
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="game-image-container">
+            <img 
+              [src]="getHeaderImage(juego.appId, juego.headerImage)" 
+              [alt]="juego.name"
+              class="game-image"
+              [class.blurred]="isNSFWGame(juego.tags, juego.name) && !isGameUnblurred(juego.appId)"
+              (error)="$any($event.target).src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+            />
+            <div 
+              *ngIf="isNSFWGame(juego.tags, juego.name) && !isGameUnblurred(juego.appId)"
+              class="blur-overlay"
+              (click)="toggleBlur(juego.appId, $event)"
+            >
+              <div class="blur-icon">🔒</div>
+              <div class="blur-text">Click para ver</div>
+            </div>
+            <div *ngIf="isGameBorrowed(juego)" class="borrowed-badge" title="Juego de préstamo familiar">
+              📤 Préstamo
+            </div>
+          </div>
+          <div class="game-info">
+            <h4 class="game-title">{{ juego.name }}</h4>
+            <div class="game-hours">
+              <span class="hours-value">{{ formatHoras(juego.horasTotales) }}</span>
+              <span class="hours-label">jugadas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card achievements-section" *ngIf="hasAchievementStats()">
+      <div class="section-header">
+        <div class="header-title">
+          <h2>🏆 Estadísticas de Logros</h2>
+          <p class="section-subtitle">Tu progreso en los logros de Steam</p>
+        </div>
+        <button 
+          class="btn-sync-achievements" 
+          (click)="syncAllAchievements()"
+          [disabled]="isOperationInProgress()"
+          title="Sincronizar todos los logros de tu biblioteca"
+        >
+          <span *ngIf="!syncingAchievements()">🔄 Actualizar Logros</span>
+          <span *ngIf="syncingAchievements()" class="spinner-sync"></span>
+        </button>
+      </div>
+
+      <!-- Mensaje de sincronización -->
+      <div *ngIf="achievementSyncMessage()" 
+           class="sync-message" 
+           [class.persistent]="!syncingAchievements()"
+           [class.breathing]="syncingAchievements()">
+        <span>{{ achievementSyncMessage() }}</span>
+        <button *ngIf="!syncingAchievements()" class="close-message-btn" (click)="closeAchievementSyncMessage()" title="Cerrar mensaje">
+          ✕
+        </button>
+      </div>
+      <!-- Banner de advertencia durante operaciones -->
+    <div *ngIf="syncingAchievements()" class="operation-banner">
+      <div class="banner-content">
+        <div class="banner-icon">⚠️</div>
+        <div class="banner-text">
+          <strong>Sincronización de logros en progreso</strong>
+          <p>No cierres esta página. Algunos botones están deshabilitados temporalmente.</p>
+        </div>
+        <div class="spinner-small-banner"></div>
+      </div>
+    </div>
+
+      <!-- Resumen global -->
+      <div class="achievements-summary">
+        <div class="achievement-stat-box">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-value">{{ estadisticas()?.estadisticasLogros?.totalJuegosConLogros || 0 }}</div>
+          <div class="stat-label">Juegos con logros</div>
+        </div>
+        <div class="achievement-stat-box">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value">{{ estadisticas()?.estadisticasLogros?.totalLogrosDesbloqueados || 0 }}</div>
+          <div class="stat-label">Logros desbloqueados</div>
+        </div>
+        <div class="achievement-stat-box">
+          <div class="stat-icon">📊</div>
+          <div class="stat-value">{{ formatPorcentaje(estadisticas()?.estadisticasLogros?.porcentajeGlobal || 0) }}</div>
+          <div class="stat-label">Progreso global</div>
+        </div>
+        <div class="achievement-stat-box">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value">{{ estadisticas()?.estadisticasLogros?.totalLogrosDisponibles || 0 }}</div>
+          <div class="stat-label">Total disponibles</div>
+        </div>
+      </div>
+
+      <!-- Juegos completados 100% -->
+      <div class="achievement-category" *ngIf="(estadisticas()?.estadisticasLogros?.juegosCompletos100?.length ?? 0) > 0">
+        <h3 class="category-title">✨ Juegos con todos los logros (100%)</h3>
+        <div class="achievement-games-grid">
+          <div 
+            *ngFor="let juego of estadisticas()?.estadisticasLogros?.juegosCompletos100" 
+            class="achievement-game-card perfect"
+            (click)="abrirEnSteam(juego.appId)"
+          >
+            <img 
+              [src]="juego.headerImage || getHeaderImage(juego.appId)" 
+              [alt]="juego.gameName"
+              class="achievement-game-img"
+              (error)="$any($event.target).src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+            />
+            <div class="achievement-game-overlay">
+              <div class="achievement-game-name">{{ juego.gameName }}</div>
+              <div class="achievement-game-progress perfect">
+                <span class="progress-icon">🏆</span>
+                <span class="progress-text">{{ juego.unlockedAchievements }}/{{ juego.totalAchievements }}</span>
+                <span class="progress-percentage">100%</span>
+              </div>
+              <div class="achievement-game-playtime" *ngIf="juego.playtimeForever">
+                ⏱️ {{ formatHoras(juego.playtimeForever / 60) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Juegos cercanos al 100% -->
+      <div class="achievement-category" *ngIf="(estadisticas()?.estadisticasLogros?.juegosCercanos100?.length ?? 0) > 0">
+        <h3 class="category-title">🎯 Casi completos (80-99%)</h3>
+        <div class="achievement-games-grid">
+          <div 
+            *ngFor="let juego of estadisticas()?.estadisticasLogros?.juegosCercanos100" 
+            class="achievement-game-card near-complete"
+            (click)="abrirEnSteam(juego.appId)"
+          >
+            <img 
+              [src]="juego.headerImage || getHeaderImage(juego.appId)" 
+              [alt]="juego.gameName"
+              class="achievement-game-img"
+              (error)="$any($event.target).src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+            />
+            <div class="achievement-game-overlay">
+              <div class="achievement-game-name">{{ juego.gameName }}</div>
+              <div class="achievement-game-progress near">
+                <span class="progress-icon">🏅</span>
+                <span class="progress-text">{{ juego.unlockedAchievements }}/{{ juego.totalAchievements }}</span>
+                <span class="progress-percentage">{{ formatPorcentaje(juego.percentage) }}</span>
+              </div>
+              <div class="achievement-game-playtime" *ngIf="juego.playtimeForever">
+                ⏱️ {{ formatHoras(juego.playtimeForever / 60) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Juegos más jugados con progreso -->
+      <div class="achievement-category" *ngIf="(estadisticas()?.estadisticasLogros?.juegosMasProgreso?.length ?? 0) > 0">
+        <h3 class="category-title">🎮 Juegos más jugados con logros</h3>
+        <div class="achievement-games-grid">
+          <div 
+            *ngFor="let juego of estadisticas()?.estadisticasLogros?.juegosMasProgreso" 
+            class="achievement-game-card"
+            (click)="abrirEnSteam(juego.appId)"
+          >
+            <img 
+              [src]="juego.headerImage || getHeaderImage(juego.appId)" 
+              [alt]="juego.gameName"
+              class="achievement-game-img"
+              (error)="$any($event.target).src='https://via.placeholder.com/460x215?text=Sin+Imagen'"
+            />
+            <div class="achievement-game-overlay">
+              <div class="achievement-game-name">{{ juego.gameName }}</div>
+              <div class="achievement-game-progress">
+                <span class="progress-icon">🎖️</span>
+                <span class="progress-text">{{ juego.unlockedAchievements }}/{{ juego.totalAchievements }}</span>
+                <span class="progress-percentage">{{ formatPorcentaje(juego.percentage) }}</span>
+              </div>
+              <div class="achievement-progress-bar">
+                <div class="achievement-progress-fill" [style.width.%]="juego.percentage"></div>
+              </div>
+              <div class="achievement-game-playtime" *ngIf="juego.playtimeForever">
+                ⏱️ {{ formatHoras(juego.playtimeForever / 60) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- Juegos más caros no jugados -->
+    <div class="section-card" *ngIf="(estadisticas()?.dineroDesperdiciado?.juegosMasCaros?.length ?? 0) > 0">
+      <div class="section-header">
+        <h2>💎 Juegos comprados sin estrenar</h2>
+        <p class="section-subtitle">Estos juegos representan tu mayor inversión pendiente</p>
+      </div>
+      <div class="expensive-games-list">
+        <div 
+          *ngFor="let juego of estadisticas()?.dineroDesperdiciado?.juegosMasCaros" 
+          class="expensive-game-item"
+          (click)="abrirEnSteam(juego.appId)"
+        >
+          <img 
+            [src]="getHeaderImage(juego.appId, juego.headerImage)" 
+            [alt]="juego.name"
+            class="expensive-game-thumb"
+            (error)="$any($event.target).src='https://via.placeholder.com/184x69?text=Sin+Imagen'"
+          />
+          <div class="expensive-game-info">
+            <h4 class="expensive-game-title">{{ juego.name }}</h4>
+            <div class="expensive-game-price">{{ formatPrecio(juego.precio) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags más comunes -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>🏷️ Géneros y categorías favoritas</h2>
+        <p class="section-subtitle">Los tags más presentes en tu colección</p>
+      </div>
+      <div class="tags-grid">
+        <div 
+          *ngFor="let tag of getTagsAMostrar()" 
+          class="tag-card"
+        >
+          <div class="tag-name">{{ tag.tag }}</div>
+          <div class="tag-stats">
+            <span class="tag-count">{{ tag.cantidad }} juegos</span>
+            <span class="tag-percentage">{{ formatPorcentaje(tag.porcentaje) }}</span>
+          </div>
+          <div class="tag-bar">
+            <div class="tag-bar-fill" [style.width.%]="tag.porcentaje"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botón para expandir/colapsar -->
+      <div class="tags-toggle" *ngIf="(estadisticas()?.tagsMasComunes?.length ?? 0) > 6">
+        <button class="btn-toggle-tags" (click)="toggleMostrarTags()">
+          <span *ngIf="!mostrarTodosTags()">▼ Ver todos los tags ({{ (estadisticas()?.tagsMasComunes?.length ?? 0) - 6 }} más)</span>
+          <span *ngIf="mostrarTodosTags()">▲ Mostrar menos</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
